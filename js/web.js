@@ -8,13 +8,12 @@ function setup() {
     focusPoint = cameraZ - focusDist;
     cameraPos = createVector(windowWidth / 2, windowHeight / 2, cameraZ);
 
-    web = new Web(60);
+    webGroup = new Web(60);
 
     frameRate(1);
 
     background(color(0, 0, 0));
 
-//    alph = 10
     alph = 5
     stroke(color(255, 255, 255, alph))
     strokeWeight(0.0005)
@@ -22,14 +21,14 @@ function setup() {
     colors = uniformSaturationColors(alph);
 
 //  Render scene
-    web.render();
+    webGroup.render();
 
     print('Focus Distance', focusDist)
     print('CameraZ', cameraZ)
     print('Focus Point', focusPoint)
     print('Camera', cameraPos.x, cameraPos.y, cameraPos.z)
-    print('Min', web.minDist, web.minp)
-    print('Max', web.maxDist, web.maxp)
+    print('Min', webGroup.minDist, webGroup.minp)
+    print('Max', webGroup.maxDist, webGroup.maxp)
 }
 
 function draw() {
@@ -43,6 +42,13 @@ function draw() {
     //        page.moveInZ(dz);
     //    }
     //    web.render();
+
+    for (let page of webGroup.pages) {
+        let d = dist(page.x, page.y, mouseX, mouseY);
+        if (d < 10) {
+            page.__proto__.render();
+        }
+    }
 }
 
 class Web {
@@ -121,10 +127,12 @@ class Page extends FocusStructure {
         super(edges)
 
         this.outEdges = []
+
+        this.visible_page = false;
     }
 
     render() {
-//        super.render()
+//            super.render()
         for (let e of this.outEdges) {
             e.render();
         }

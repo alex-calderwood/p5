@@ -31,11 +31,7 @@ function draw() {
         if(random(10) < 1) {
             blob.blubble(random(10) < 1);
         }
-
-
     }
-
-
 }
 
 class Point {

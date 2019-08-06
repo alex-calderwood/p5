@@ -147,7 +147,6 @@ let sketch = function(p) {
 
         size() {
             let m = p.map(this.rank, 1, nPages, 1, 10);
-            // p5.print(this.rank, m, 11-m)
             return (13 - m) 
         }
 
@@ -192,16 +191,13 @@ let sketch = function(p) {
             this.sprite = p.createSprite(onPage.sprite.position.x, onPage.sprite.position.y, 10, 10);
             this.sprite.addImage('cursor', cursorImage)
             this.sprite.scale = 0.05;
-            this.name = getName();
             this.waitThreshold = randWaitThreshold();
+
             this.browsingHistory = []
-            // this.age = age
-            // this.gender = gender
-            // this.location = location
+            this.name = getName();
         }
 
         moveToPositionOnLine(i, onPage, toPage) {
-            // p5.print(i, onPage, toPage)
             this.sprite.position = p5.Vector.lerp(onPage.sprite.position, toPage.sprite.position, i);
         }
 

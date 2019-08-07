@@ -27,7 +27,7 @@ let sketch = function(p) {
     }
         
      p.setup = function() {
-        viewWidth = p.windowWidth;
+        viewWidth = p.windowWidth * 3/4;
         viewHeight = p.windowHeight * 3/4;
 
         drawerY= viewHeight;
@@ -52,7 +52,7 @@ let sketch = function(p) {
 
         // Add connections between pages
         let numEdges = 250;
-        for(let i = 0; i < numEdges; i++) {
+        for (let i = 0; i < numEdges; i++) {
             let page1 = pages[Math.floor(p.random(pages.length))];
             let page2 = pages[Math.floor(p.random(pages.length))];
             page1.edgeTo(page2)
@@ -81,7 +81,7 @@ let sketch = function(p) {
     }
 
     p.draw = function() {
-        p.background(145, 236, 237);
+        p.background(0, 0, 0);
         p.fill(0);
 
         for (let trash of trashList) {
@@ -104,7 +104,7 @@ let sketch = function(p) {
 
         // Draw connections
         p.strokeWeight(0.5);
-        p.stroke(0, 0, 0, 100)
+        p.stroke(255, 255, 255, 100)
         for (let page1 of pages) {
             for (let page2 of page1.edges) {
                 p.line(page1.sprite.position.x, page1.sprite.position.y, 
@@ -346,6 +346,10 @@ let sketch = function(p) {
                 break
             }
         }
+    }
+
+    function drawsideDrawer() {
+
     }
 }
 

@@ -1,15 +1,22 @@
 // live-server
+
+// Parameters
 let nPages = 100;
 let numPeople = 10;
 
+// Global player object
 let player;
 
+// Sprite info
 let webGroup;
 let pages = [];
 let peopleGroup;
 let people = []
 let trashList = [];
 let trashGroup;
+
+// Viewbox stuff
+let sideDrawer;
 let viewWidth, viewHeight;
 let drawerY;
 let drawerHeight;
@@ -27,11 +34,13 @@ let sketch = function(p) {
     }
         
      p.setup = function() {
-        viewWidth = p.windowWidth * 3/4;
+        viewWidth = p.windowWidth * 3/5;
         viewHeight = p.windowHeight * 3/4;
 
         drawerY= viewHeight;
         drawerHeight = p.windowHeight - drawerY;
+
+        sideDrawer = new SideDrawer(viewWidth, p.windowWidth - viewWidth, drawerY)
 
         player = new Player()
 
@@ -74,8 +83,8 @@ let sketch = function(p) {
     p.mouseClicked = function() {
         for(let page of pages) {
             if (page.sprite.overlapPoint(p.mouseX, p.mouseY)) {
+                player.pageClicked = page;
                 page.addCookie();
-                p.print(page.cookie);
             }
         }
     }
@@ -128,6 +137,7 @@ let sketch = function(p) {
         drawCard();
         
         drawDrawer();
+        sideDrawer.draw();
     }
 
     class WebPage {
@@ -169,8 +179,8 @@ let sketch = function(p) {
 
         addCookie() {
             this.cookie = true;
+            player.cookiesPlaced++;
         }
-
     }
 
     function randWaitThreshold() {
@@ -261,7 +271,14 @@ let sketch = function(p) {
     class Player {
         constructor() {
             this.heaps = []; // the number of trash heaps you have
+            this.cookiesPlaced = 0;
             this.money = 0;
+
+            this.pageClicked = false;
+        }
+        get info() {
+            return 'Cookies Placed ' + this.cookiesPlaced + '\n'
+            
         }
     }
 
@@ -317,7 +334,7 @@ let sketch = function(p) {
                 var cardHeight = 100;
                 // p.rect(cardx, cardy, cardWidth, cardHeight, 10);
     
-                p.fill(p.color(0, 0, 0));
+                p.fill(p.color(255, 255, 255));
                 p.text(text, p.mouseX + 30, p.mouseY + 1/2 * textSize);
     
                 break; // Make sure we only draw one at a time
@@ -348,9 +365,73 @@ let sketch = function(p) {
         }
     }
 
-    function drawsideDrawer() {
+    class SideDrawer {
+        constructor(x, width, height) {
+            this.x = x;
+            this.y = 0;
+            this.width = width;
+            this.height = height;
+            this.currentTab = 'Security';
+        }
 
+        draw() {
+            p.strokeWeight(0);
+            p.fill(p.color(255, 255, 255, 255));
+            p.rect(this.x, 0, this.width, this.height);
+    
+            if (player.pageClicked) {
+                this.drawPagePage(player.pageClicked);
+                this.currentTab = 'Data';
+            }else if (this.currentTab == 'Security') {
+                this.drawSecurity();
+            }
+
+            this.drawTabs();
+        }
+
+        drawSecurity() {
+            p.fill(p.color(0, 0, 0));
+            textCentered(player.info, this.x, this.y, this.width, this.height, 32);
+        }
+
+        drawTabs() {
+            let names = ['Algorithms', 'Data', 'Security'];
+            let numTabs = names.length;
+            let width = this.width / numTabs;
+            for (let i = 0; i < numTabs; i ++) {
+                this.drawTab(this.x + i * width, width, names[i])
+            }
+        }
+
+        drawTab(x, width, name) {
+            let y = 0;
+            let height = 100;
+            if (p.collidePointRect(p.mouseX, p.mouseY, x, y, width, height)) {
+                p.fill(p.color(100, 100, 100));
+            } else {
+                p.fill(p.color(200, 200, 200));
+            }
+            p.rect(x, y, width, height);
+            p.fill(0)
+            textCentered(name, x, y, width, height);
+        }
+
+        drawPagePage(page) {
+            console.log(page.url)
+            p.fill(0);
+            textCentered(page.url + '\n' + page.cookie, this.x, this.y, this.width, this.height, 30);
+        }
     }
+
+    function textCentered(text, x, y, width, height, size) {
+        if (!size)
+            size = 22;
+        p.textSize(size);
+        let l = text.length * size / 2;
+        p.text(text, x + (width / 2) - l / 2, y + height / 2 - size / 2, width, height)
+    }
+
+
 }
 
 let myp5 = new p5(sketch);

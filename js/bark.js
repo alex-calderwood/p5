@@ -3,12 +3,17 @@ let n_segments = 10;
 let base_spacing = 4;
 let SPACING_MODIFIER = 1.05;
 
+
+
+let frame_num = 0;
+let x_offset = 1000235;
+let y_offset = 42;
+
 function setup() {
     smooth();
     canvas = createCanvas(windowWidth, windowHeight);
-    frameRate(30);
+    frameRate(60);
     background('black');
-
 
     let first_line_points = []
     let start = createVector(0, 0);
@@ -37,13 +42,17 @@ function setup() {
         spacing *= random(1, SPACING_MODIFIER);
     }
 
-    for (l of lines) {
-        l.draw()
-    }
 }
 
 function draw() {
+    background(0);
+    for (let l of lines) {
+        // add a bit of noise to each point in each line
+        LifeLine.noisePoints(frame_num, l.points);
+        l.draw()
+    }
 
+    frame_num += 1;
 }
 
 class LifeLine {
@@ -69,14 +78,28 @@ class LifeLine {
         return lifeLine;
     }
 
-    draw() {        
+    static noisePoints(frame_num, points) {
+
+        
+        for (let p of points) {
+            x_offset = x_offset + 1;
+            // y_offset = y_offset + 0.01;
+
+            let height_mod = (noise(x_offset) * 5) - 2.5;
+            p.y = p.y + height_mod;
+            print(height_mod)
+            // p.y += (noise(y_offset) * 5) - 2.5;
+        }
+    }
+
+    draw(frame_num) { 
         stroke(255, 255, 255)
         noFill();
         beginShape();
 
         for(let i = 0; i < n_segments; i++) {
             let point = this.points[i];
-            curveVertex(point.x, point.y);
+            curveVertex(point.x + 10, point.y);
         }
 
         endShape();

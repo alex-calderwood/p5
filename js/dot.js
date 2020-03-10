@@ -1,17 +1,15 @@
-var inputs = [];
+var inputs = [];    // user input
 
-var bbox = null;
-// variables to center the window
-var xOffset = null;
+var bbox = null;    // bounding box
+var xOffset = null; // variables to center the window
 var yOffset = null;
-
-var dots = [];
-var m = null; // slope
-var w = [0, 0, 0];         // weight vector
+var dots = [];      // Points to be classified
+var w = [0, 0, 0];  // weight vector
 var separator = []; // seperator (x, y), (x, y)
+var m = null;       // slope of seperator
 
-var entered = false;
-var debug = true;
+var entered = false; // has user pressed enter?
+var debug = true;    // debug flag
 
 function setup() {
 
@@ -173,10 +171,10 @@ function keyPressed() {
     
             // Define the seperator coordinates in UV space (means -y)
             separator[0].x = -xOffset;
-            separator[0].y = - m * -xOffset - (b / w2);
+            separator[0].y = - m * -xOffset + (b / w2);
     
             separator[1].x = xOffset;
-            separator[1].y = - m * xOffset - (b / w2);
+            separator[1].y = - m * xOffset + (b / w2);
         }
 
         if (debug) {

@@ -6,6 +6,7 @@ var xOffset = null;
 var yOffset = null;
 
 var dots = [];
+var m = null; // slope
 var w = [0, 0, 0];         // weight vector
 var separator = []; // seperator (x, y), (x, y)
 
@@ -23,8 +24,8 @@ function setup() {
     frameRate(5);
 
     createElement('br')
-    let w1 = createInput('0');
-    let w2 = createInput('0');
+    let w1 = createInput('1');
+    let w2 = createInput('1');
     let b = createInput('0');
 
     inputs = [w1, w2, b];
@@ -41,7 +42,6 @@ function draw() {
     drawBackground(separator);
 
     // Draw the points
-    strokeWeight(0);
     for (let dot of dots) {
 
         var dotProduct = (w[0] * dot.position.x) + (w[1] * dot.position.y) + w[2];
@@ -49,18 +49,27 @@ function draw() {
         // Save the value
         dot.dot = dotProduct;
 
-        if ((dotProduct > 0 && dot.class) || (dotProduct <= 0 && !dot.class)) {
-            fill(100, 100, 100, 100)
-        } else {
-            fill(100, 110, 190, 200);
+        // if ((dotProduct > 0 && dot.class) || (dotProduct <= 0 && !dot.class)) {
+        //     fill(100, 100, 100, 100);
+        // } else {
+        //     fill(100, 110, 190, 200);
+        // }
+
+        if (dotProduct > 0) {
+            // noFill()
+            fill('white');
+            stroke('grey')
+            // strokeWeight(0.5);
+            // circle(dot.position.x + xOffset, dot.position.y + yOffset, 10);
         }
 
-        circle(dot.position.x + xOffset, dot.position.y + yOffset, 6);
+        // fill(0, 0, 0, 100);
+        circle(dot.uv.x + xOffset, dot.uv.y + yOffset, 6);
         
         if (debug) {
-            fill(0, 0, 0, 100)
+            fill(0, 0, 0, 100);
             noStroke();
-            text(dot.position.x.toFixed(0) + ' ' + dot.position.y.toFixed(0) + '\n' + dot.dot.toFixed(0), dot.position.x + xOffset, dot.position.y + yOffset + 14)
+            text(dot.position.x.toFixed(0) + ' ' + dot.position.y.toFixed(0) + '\n' + dot.dot.toFixed(0), dot.uv.x + xOffset, dot.uv.y + yOffset + 14);
         }
     }
 
@@ -77,17 +86,23 @@ function draw() {
 }
 
 function drawBackground(separator) {
-    // Sort points 
-    if (separator[0].x < separator[1].x) {
-        // temp = separator[0];
-        // separator[0] =  separator[1];
-        // separator[1] = temp;
 
+
+    fill(200, 50, 100, 50)
+    beginShape();
+        vertex(0,0);
+        vertex(0, bbox[1]);
+        vertex(bbox[0], bbox[1]);
+        vertex(bbox[0], 0);
+    endShape(CLOSE);
+
+    if (m > 0) {
         bottomCorner = createVector(0, 0);
         topCorner = createVector(0, bbox[1]);
     } else {
         bottomCorner = createVector(bbox[0], 0);
         topCorner = createVector(bbox[0], bbox[1]);
+        console.log(m, bottomCorner, topCorner)
     }
 
     fill(100, 100, 100, 100)
@@ -108,8 +123,11 @@ function drawBackground(separator) {
 function placeDots() {
     let numDots = 300;
     for (let i = 0; i < numDots; i ++) {
+        let x = random(bbox[0]) - xOffset;
+        let y = random(bbox[1]) - yOffset;
         dots.push( {
-            position: createVector(random(bbox[0]) - xOffset, random(bbox[1]) - yOffset),
+            position: createVector(x, y),
+            uv: createVector(x, - y),
             class: random([ 0, 1 ])
         });
     }
@@ -137,7 +155,6 @@ function keyPressed() {
         w = [w1, w2, b];
 
         // calculate linear sepeator coordinates
-        var m; // slope
         if ( w2 == 0 && w1 != 0) { // vertical line
             separator[0].x = -b / w1;
             separator[0].y = -yOffset;
@@ -154,11 +171,12 @@ function keyPressed() {
                 m = ( p1.y - p2.y ) / (p1.x - p2.x);
             }
     
+            // Define the seperator coordinates in UV space (means -y)
             separator[0].x = -xOffset;
-            separator[0].y = m * -xOffset - (b / w2);
+            separator[0].y = - m * -xOffset - (b / w2);
     
             separator[1].x = xOffset;
-            separator[1].y = m * xOffset - (b / w2);
+            separator[1].y = - m * xOffset - (b / w2);
         }
 
         if (debug) {

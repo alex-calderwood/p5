@@ -20,7 +20,7 @@ function setup() {
 
     smooth();
     canvas = createCanvas(bbox[0], bbox[1]);
-    frameRate(30);
+    frameRate(5);
 
     createElement('br')
     let w1 = createInput('0');
@@ -32,16 +32,16 @@ function setup() {
 
     placeDots();
 
-    background(color('white'));
-
     textAlign(CENTER)
 }
 
 function draw() {
+    // Background
     background(color(255, 255, 255, 255));
-    strokeWeight(0);
     drawBackground(separator);
 
+    // Draw the points
+    strokeWeight(0);
     for (let dot of dots) {
 
         var dotProduct = (w[0] * dot.position.x) + (w[1] * dot.position.y) + w[2];
@@ -50,9 +50,9 @@ function draw() {
         dot.dot = dotProduct;
 
         if ((dotProduct > 0 && dot.class) || (dotProduct <= 0 && !dot.class)) {
-            fill('green')
+            fill(100, 100, 100, 100)
         } else {
-            fill('red');
+            fill(100, 110, 190, 200);
         }
 
         circle(dot.position.x + xOffset, dot.position.y + yOffset, 6);
@@ -64,10 +64,10 @@ function draw() {
         }
     }
 
+    // Debug text / debug points
     stroke(50, 50, 50, 255);
-
+    strokeWeight(0);
     fill(0, 190, 190, 255);
-
     if (debug) {
         line(separator[0].x + xOffset, separator[0].y + yOffset,
         separator[1].x + xOffset, separator[1].y + yOffset);
@@ -77,13 +77,32 @@ function draw() {
 }
 
 function drawBackground(separator) {
-    fill('red')
+    // Sort points 
+    if (separator[0].x < separator[1].x) {
+        // temp = separator[0];
+        // separator[0] =  separator[1];
+        // separator[1] = temp;
+
+        bottomCorner = createVector(0, 0);
+        topCorner = createVector(0, bbox[1]);
+    } else {
+        bottomCorner = createVector(bbox[0], 0);
+        topCorner = createVector(bbox[0], bbox[1]);
+    }
+
+    fill(100, 100, 100, 100)
     beginShape();
-        vertex(0, 0);
+        vertex(bottomCorner.x, bottomCorner.y);
+        vertex(topCorner.x, topCorner.y);
+
         vertex(separator[0].x + xOffset, separator[0].y + yOffset);
         vertex(separator[1].x + xOffset, separator[1].y + yOffset);
-        vertex(0, 0)
+        vertex(bottomCorner.x, bottomCorner.y);
     endShape(CLOSE);
+
+    strokeWeight(1);
+    fill('black')
+    line(separator[0].x + xOffset, separator[0].y + yOffset, separator[1].x + xOffset, separator[1].y + yOffset);
 }
 
 function placeDots() {
@@ -94,7 +113,6 @@ function placeDots() {
             class: random([ 0, 1 ])
         });
     }
-
 }
 
 function keyPressed() {
@@ -116,7 +134,7 @@ function keyPressed() {
         }
 
         // set w vector globally
-        w = [w1, w2, b]
+        w = [w1, w2, b];
 
         // calculate linear sepeator coordinates
         var m; // slope

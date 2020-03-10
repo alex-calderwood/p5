@@ -76,41 +76,45 @@ function draw() {
     strokeWeight(0);
     fill(0, 190, 190, 255);
     if (debug) {
-        line(separator[0].x + xOffset, separator[0].y + yOffset,
-        separator[1].x + xOffset, separator[1].y + yOffset);
+        line(separator[0].x, separator[0].y + yOffset,
+        separator[1].x, separator[1].y + yOffset);
         circle(xOffset, yOffset, 5);
         circle(xOffset - w[2], yOffset, 5);
     }
 }
 
 function drawBackground(separator) {
+    // fill(200, 50, 100, 50)
+    // beginShape();
+    //     vertex(0,0);
+    //     vertex(0, bbox[1]);
+    //     vertex(bbox[0], bbox[1]);
+    //     vertex(bbox[0], 0);
+    // endShape(CLOSE);
+
+    let y;
+    if (m < 0) {
 
 
-    fill(200, 50, 100, 50)
-    beginShape();
-        vertex(0,0);
-        vertex(0, bbox[1]);
-        vertex(bbox[0], bbox[1]);
-        vertex(bbox[0], 0);
-    endShape(CLOSE);
-
-    if (m > 0) {
-        bottomCorner = createVector(0, 0);
-        topCorner = createVector(0, bbox[1]);
     } else {
         bottomCorner = createVector(bbox[0], 0);
         topCorner = createVector(bbox[0], bbox[1]);
-        console.log(m, bottomCorner, topCorner)
+        console.log(m, bbox, bottomCorner, topCorner)
     }
+
+    var sep = p5.Vector.sub(separator[0], separator[1]);
+    let perp = createVector(separator[0].x, - (separator[0].x * sep.x) / sep.y);
+
+
+    p3 = p5.Vector.add(separator[0], perp)
+    p4 = p5.Vector.add(separator[1], perp)
 
     fill(100, 100, 100, 100)
     beginShape();
-        vertex(bottomCorner.x, bottomCorner.y);
-        vertex(topCorner.x, topCorner.y);
-
         vertex(separator[0].x + xOffset, separator[0].y + yOffset);
         vertex(separator[1].x + xOffset, separator[1].y + yOffset);
-        vertex(bottomCorner.x, bottomCorner.y);
+        vertex(p4.x + xOffset, p4.y + yOffset);
+        vertex(p3.x + xOffset, p3.y + yOffset);
     endShape(CLOSE);
 
     strokeWeight(1);
@@ -166,6 +170,7 @@ function keyPressed() {
                 // // solve for two points by setting dotproduct to 0
                 let p1 = createVector(0, -b / w2); // y intercept
                 let p2 = createVector(-b / w1, 0); // x intercept
+                console.log('p1', p1, p2)
                 m = ( p1.y - p2.y ) / (p1.x - p2.x);
             }
     

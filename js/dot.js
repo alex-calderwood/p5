@@ -1,3 +1,5 @@
+// http://www.joemckaystudio.com/multisketches/
+
 var inputs = [];    // user input
 
 var bbox = null;    // bounding box
@@ -9,7 +11,9 @@ var separator = []; // seperator (x, y), (x, y)
 var m = null;       // slope of seperator
 
 var entered = false; // has user pressed enter?
-var debug = true;    // debug flag
+var debug = false;    // debug flag
+
+var cursor = null;
 
 function setup() {
 
@@ -37,11 +41,10 @@ function setup() {
 function draw() {
     // Background
     background(color(255, 255, 255, 255));
-    drawBackground(separator);
+    drawSep(separator);
 
     // Draw the points
     for (let dot of dots) {
-
         var dotProduct = (w[0] * dot.position.x) + (w[1] * dot.position.y) + w[2];
 
         // Save the value
@@ -53,12 +56,14 @@ function draw() {
         //     fill(100, 110, 190, 200);
         // }
 
+        stroke('grey');
+        strokeWeight(0.5);
         if (dotProduct > 0) {
             // noFill()
-            fill('white');
-            stroke('grey')
-            // strokeWeight(0.5);
+            fill('black');
             // circle(dot.position.x + xOffset, dot.position.y + yOffset, 10);
+        } else {
+            fill('white')
         }
 
         // fill(0, 0, 0, 100);
@@ -83,28 +88,10 @@ function draw() {
     }
 }
 
-function drawBackground(separator) {
-    // fill(200, 50, 100, 50)
-    // beginShape();
-    //     vertex(0,0);
-    //     vertex(0, bbox[1]);
-    //     vertex(bbox[0], bbox[1]);
-    //     vertex(bbox[0], 0);
-    // endShape(CLOSE);
-
-    let y;
-    if (m < 0) {
-
-
-    } else {
-        bottomCorner = createVector(bbox[0], 0);
-        topCorner = createVector(bbox[0], bbox[1]);
-        console.log(m, bbox, bottomCorner, topCorner)
-    }
-
+function drawSep(separator) {
     var sep = p5.Vector.sub(separator[0], separator[1]);
     let perp = createVector(separator[0].x, - (separator[0].x * sep.x) / sep.y);
-
+    perp.normalize().mult(bbox[0]);
 
     p3 = p5.Vector.add(separator[0], perp)
     p4 = p5.Vector.add(separator[1], perp)
@@ -113,8 +100,9 @@ function drawBackground(separator) {
     beginShape();
         vertex(separator[0].x + xOffset, separator[0].y + yOffset);
         vertex(separator[1].x + xOffset, separator[1].y + yOffset);
-        vertex(p4.x + xOffset, p4.y + yOffset);
-        vertex(p3.x + xOffset, p3.y + yOffset);
+        vertex(separator[1].x + xOffset, p4.y + yOffset);
+        vertex(p3.x + xOffset, p4.y + yOffset);
+        vertex(p3.x + xOffset, separator[0].y + yOffset);
     endShape(CLOSE);
 
     strokeWeight(1);
@@ -170,7 +158,6 @@ function keyPressed() {
                 // // solve for two points by setting dotproduct to 0
                 let p1 = createVector(0, -b / w2); // y intercept
                 let p2 = createVector(-b / w1, 0); // x intercept
-                console.log('p1', p1, p2)
                 m = ( p1.y - p2.y ) / (p1.x - p2.x);
             }
     

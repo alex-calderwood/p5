@@ -1,4 +1,5 @@
 // http://www.joemckaystudio.com/multisketches/
+// TODO fix 1, 1, 700
 
 var inputs = [];    // user input
 
@@ -89,12 +90,26 @@ function draw() {
 }
 
 function drawSep(separator) {
-    var sep = p5.Vector.sub(separator[0], separator[1]);
-    let perp = createVector(separator[0].x, - (separator[0].x * sep.x) / sep.y);
-    perp.normalize().mult(bbox[0]);
+    // Create a vector defining angle of seperator and another perpendicular to it
+    var sepVec = p5.Vector.sub(separator[0], separator[1]).normalize();
 
-    p3 = p5.Vector.add(separator[0], perp)
-    p4 = p5.Vector.add(separator[1], perp)
+    let perpVec;
+    if (sepVec.x == 0) { // vertical line
+        perpVec = createVector(-1, 0);
+    } else if (sepVec.y == 0) {
+        perpVec = createVector(0, 1);
+    } else {
+        perpVec = createVector(separator[0].x, - (separator[0].x * sepVec.x) / sepVec.y);
+    }
+
+    if (w[0] > 0) { // TODO figure out why this works
+        perpVec.mult(-1);
+    }
+
+    perpVec.normalize().mult(2 * bbox[0]);
+
+    p3 = p5.Vector.add(separator[0], perpVec)
+    p4 = p5.Vector.add(separator[1], perpVec)
 
     fill(100, 100, 100, 100)
     beginShape();
@@ -173,5 +188,7 @@ function keyPressed() {
             console.log('m', m, 'w1', w1, 'w2', w2, 'b', b)
             console.log('sep', separator[0].x, separator[0].y, separator[1].x, separator[1].y)
         }
+    } else if (key == 'd') {
+        debug = !debug;
     }
 }

@@ -24,7 +24,7 @@ function setup() {
 
     smooth();
     canvas = createCanvas(bbox[0], bbox[1]);
-    frameRate(5);
+    frameRate(1);
 
     createElement('br')
     let w1 = createInput('1');
@@ -36,57 +36,17 @@ function setup() {
 
     placeDots();
 
-    textAlign(CENTER)
+    textAlign(CENTER);
+    ellipseMode(CENTER);
+
+    drawDots();
 }
 
-function draw() {
+function drawBackground() {
     // Background
     background(color(255, 255, 255, 255));
     drawSep(separator);
-
-    // Draw the points
-    for (let dot of dots) {
-        var dotProduct = (w[0] * dot.position.x) + (w[1] * dot.position.y) + w[2];
-
-        // Save the value
-        dot.dot = dotProduct;
-
-        // if ((dotProduct > 0 && dot.class) || (dotProduct <= 0 && !dot.class)) {
-        //     fill(100, 100, 100, 100);
-        // } else {
-        //     fill(100, 110, 190, 200);
-        // }
-
-        stroke('grey');
-        strokeWeight(0.5);
-        if (dotProduct > 0) {
-            // noFill()
-            fill('black');
-            // circle(dot.position.x + xOffset, dot.position.y + yOffset, 10);
-        } else {
-            fill('white')
-        }
-
-        // fill(0, 0, 0, 100);
-        circle(dot.uv.x + xOffset, dot.uv.y + yOffset, 6);
-        
-        if (debug) {
-            fill(0, 0, 0, 100);
-            noStroke();
-            text(dot.position.x.toFixed(0) + ' ' + dot.position.y.toFixed(0) + '\n' + dot.dot.toFixed(0), dot.uv.x + xOffset, dot.uv.y + yOffset + 14);
-        }
-    }
-
-    // Debug text / debug points
-    stroke(50, 50, 50, 255);
-    strokeWeight(0);
-    fill(0, 190, 190, 255);
-    if (debug) {
-        line(separator[0].x, separator[0].y + yOffset,
-        separator[1].x, separator[1].y + yOffset);
-        circle(xOffset, yOffset, 5);
-        circle(xOffset - w[2], yOffset, 5);
-    }
+    drawDots();
 }
 
 function drawSep(separator) {
@@ -102,7 +62,7 @@ function drawSep(separator) {
         perpVec = createVector(separator[0].x, - (separator[0].x * sepVec.x) / sepVec.y);
     }
 
-    if (w[0] > 0) { // TODO figure out why this works
+    if (w[0] >= 0) { // TODO figure out why this works
         perpVec.mult(-1);
     }
 
@@ -122,11 +82,59 @@ function drawSep(separator) {
 
     strokeWeight(1);
     fill('black')
-    line(separator[0].x + xOffset, separator[0].y + yOffset, separator[1].x + xOffset, separator[1].y + yOffset);
+    line(separator[0].x + xOffset, separator[0].y + yOffset, 
+         separator[1].x + xOffset, separator[1].y + yOffset);
+}
+
+function drawDots() {
+    
+    for (let dot of dots) {
+        var dotProduct = (w[0] * dot.position.x) + (w[1] * dot.position.y) + w[2];
+        // Save the value
+        dot.dot = dotProduct;
+
+        
+        // Draw the circles around the dots
+        if (dotProduct > 0) {
+            fill(255, 255, 255, 150);
+            stroke(255, 255, 255, 150);
+        } else {
+            fill(0, 0, 0, 150);
+            stroke(0, 0, 0, 150);
+        }
+
+
+        textSize(20);
+        strokeWeight(0);
+        text(dot.class ? '+' : '-',  dot.uv.x + xOffset, dot.uv.y + yOffset)
+
+        strokeWeight(1);
+        noFill();
+        if ((dotProduct > 0 && dot.class) || (dotProduct <= 0 && !dot.class)) {
+            circle(dot.uv.x + xOffset, dot.uv.y + yOffset - 5, 14);
+        }
+        
+        if (debug) {
+            fill(0, 0, 0, 100);
+            noStroke();
+            text(dot.position.x.toFixed(0) + ' ' + dot.position.y.toFixed(0) + '\n' + dot.dot.toFixed(0), dot.uv.x + xOffset, dot.uv.y + yOffset + 14);
+        }
+    }
+
+    // Debug text / debug points
+    stroke(50, 50, 50, 255);
+    strokeWeight(0);
+    fill(0, 190, 190, 255);
+    if (debug) {
+        line(separator[0].x, separator[0].y + yOffset,
+        separator[1].x, separator[1].y + yOffset);
+        circle(xOffset, yOffset, 10);
+        circle(xOffset - w[2], yOffset, 10);
+    }
 }
 
 function placeDots() {
-    let numDots = 300;
+    let numDots = 1000;
     for (let i = 0; i < numDots; i ++) {
         let x = random(bbox[0]) - xOffset;
         let y = random(bbox[1]) - yOffset;
@@ -170,7 +178,7 @@ function keyPressed() {
             if ( b == 0) {
                 m = - w1 / w2;
             } else {
-                // // solve for two points by setting dotproduct to 0
+                // solve for two points by setting dotproduct to 0
                 let p1 = createVector(0, -b / w2); // y intercept
                 let p2 = createVector(-b / w1, 0); // x intercept
                 m = ( p1.y - p2.y ) / (p1.x - p2.x);
@@ -188,7 +196,10 @@ function keyPressed() {
             console.log('m', m, 'w1', w1, 'w2', w2, 'b', b)
             console.log('sep', separator[0].x, separator[0].y, separator[1].x, separator[1].y)
         }
+
+        drawBackground()
     } else if (key == 'd') {
         debug = !debug;
+        drawBackground()
     }
 }

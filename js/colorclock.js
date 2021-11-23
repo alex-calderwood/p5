@@ -28,8 +28,15 @@ const dt = 0.1;
 const backgroundAlpha = 70;
 const modAddRange = 0;
 let mod = 1;
+let holdMod = 1
+
+var prevPoint;
+
+var mode = false;
+var i = 0;
 
 function setup() {
+    prevPoint = createVector(0, 0);
     var c = createCanvas(windowWidth, windowHeight);
 
     center = createVector(windowWidth /2, windowHeight / 2);
@@ -64,16 +71,34 @@ function makeColors() {
     return colors;
 }
 
-function drawTick(point, c) {
+function drawTick(point, c, frame) {
 
-    rect(
-        point.x,
-        0,
-        4,
-        windowHeight
-    );
+    if (mode) {
+        rect(
+            point.x,
+            0,
+            4,
+            windowHeight
+        );
+    } else {
+        rect(
+            prevPoint.x,
+            0,
+            4 + i,
+            windowHeight
+        )
+    }
+    
     strokeWeight(0);
     fill(c);
+
+    if (frame % (FR * holdMod) == 0) {
+        prevPoint = point;
+        mode = !mode;
+        i = 0;
+        holdMod = random(0.3, 4);
+    }
+    i ++;
 }
 
 function draw() {
@@ -90,7 +115,7 @@ function draw() {
         let moddedDist = (dist * frameCount) % windowWidth;
         var point = start.copy().add(moddedDist, 0);
 //        var point = center;
-        drawTick(point, g1);
+        drawTick(point, g1, frameCount);
     }
     // mod += Math.floor(random(-modAddRange, modAddRange));
     // mod = max(min(mod, modMax), modMin);
@@ -164,7 +189,7 @@ function tempToRGB(K) {
     b = clamp(b);
     c = color(r, g, b);
 
-    console.log(temp, r, g, b);
+    // console.log(temp, r, g, b);
     return color(c);
 }
 

@@ -2,7 +2,7 @@ let center;
 // var colors = []
 let saturation, value;
 let lineWidth;
-let g1, g2;
+let g1;
 let mod;
 
 
@@ -19,18 +19,15 @@ function setup() {
 
     currentTime = (currentTime + 0.05);
     // let currentTime = currentHourAsFloat();
-    let K = hourToK(currentTime);
-    g1 = tempToRGB(K);
-    g2 = g1;
+    // let K = hourToK(currentTime);
+    // g1 = tempToRGB(K);
 
-
-    backgroundGradient();
-
-    // colors = makeColors()
+    background(0);
 
     lineWidth = random(10, 90);
 
-    mod = Math.floor(random(2, 12));
+    // mod = Math.floor(random(1, 20));
+    mod = 1
 
 
     // smooth();
@@ -54,15 +51,14 @@ function makeColors() {
 function drawTick(point, c) {
 
     rect(
-        random(0, windowWidth), 
-        random(0, windowHeight),
-        10, 10 
-        // random(0, windowWidth / 4),
-        // random(0, windowHeight / 4)
+        point.x,
+        0,
+        10,
+        windowHeight
     );
     
     // var alot = 1000;
-    // strokeWeight(0);
+    strokeWeight(0);
     fill(c);
 
     // beginShape();
@@ -75,33 +71,20 @@ function drawTick(point, c) {
     // endShape(CLOSE);
 }
 
-
-function backgroundGradient() {
-    noFill();
-    for(var i = 0; i < windowWidth; i ++) {
-        var interp = map(i, 0, windowWidth, 0, 1)
-        stroke(lerpColor(g1, g2, interp));
-        strokeWeight(1);
-        line(i, 0, i, windowHeight);
-    }
-}
-
 function draw() {
-
-
-    currentTime = (currentTime + 0.1);
+    currentTime = (currentTime + 0.01);
     // let currentTime = currentHourAsFloat();
     let K = hourToK(currentTime);
     g1 = tempToRGB(K);
-    g2 = g1
 
 
-//    background(g1);
+//    background(0,0,0,5);
 
-    var start = createVector(0, center.y)
-
+    var start = createVector(0, 0);
+    var dist = 3;
     if(frameCount % mod == 0) {
-        var point = start.copy().add(9 * frameCount, 0);
+        let moddedDist = (dist * frameCount) % windowWidth;
+        var point = start.copy().add(moddedDist, 0);
 //        var point = center;
         drawTick(point, g1);
     }

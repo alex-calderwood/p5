@@ -1,12 +1,12 @@
 // var K = 1900;
-var mainHour = 0;
-var maxK = 8000;
-minK = 1000;
+var currentTime = 0;
+var maxK = 9000;
+var minK = 1500;
 
 function setup() {
     smooth();
     canvas = createCanvas(windowWidth, windowHeight);
-    frameRate(30);
+    frameRate(10);
     strokeWeight(0.3);
     colorMode(RGB, 255)
 }
@@ -17,34 +17,36 @@ function draw() {
     // K = K % 8000;
     // console.log(K);
     // background(color(100, 0, 0))
-    mainHour += 0.1;
-    mainHour = mainHour % 24;
-    console.log('h0 ', mainHour);
-    let K = hourToK(mainHour);
-    let c = tempToRGB(K)
-    console.log("K " + K);
-    background(c);
+    // mainHour += 0.1;
+
+    currentTime = currentTime + 0.1;
+    // currentTime = getCurrentTime();
+    let kelvin = hourToK(currentTime % 24);
+    let color = tempToRGB(kelvin)
+    background(color);
 
 }
 
 function clamp(c) {
-    return max(0, min(255, c));
+    return Math.max(0, Math.min(255, c));
 }
 
+// hour is always beetween 0 and 24
 function hourToK(hour) {
-    console.log('h1 ' + hour)
+
+    // console.log('h1 ' + hour)
     let sunrise = 6.9; // # 6:55 AM;
     let sunset = 16.9 // # 4:54 PM;
-    let newHour = max(sunrise, min(sunset, hour));
-
+    let newHour = Math.max(sunrise, Math.min(sunset, hour));
+    
     let dayLength = sunset - sunrise;
 
-    let r = dayLength / 2;
+    let r = Math.ceil(dayLength / 2);
     let x = newHour - (sunrise + r);
-    let y = sqrt(r * r - x * x);
+
+    let y = Math.sqrt(r * r - x * x);
     let h = y / r;
     let K = h * (maxK - minK) + minK;
-    print('hour ', hour, 'r ', r, 'y', y, 'K', K);
     return K
 }
 
@@ -78,4 +80,13 @@ function tempToRGB(K) {
 
     console.log(temp, r, g, b);
     return color(c);
+}
+
+// function to compute the current time
+function getCurrentTime() {
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+    return h + (m/60) + (s/3600);
 }

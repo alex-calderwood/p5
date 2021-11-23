@@ -7,7 +7,7 @@ let mod;
 
 
 var currentTime = 0;
-var maxK = 9000;
+var maxK = 12000;
 var minK = 1500;
 
 function setup() {
@@ -78,7 +78,7 @@ function draw() {
     g1 = tempToRGB(K);
 
 
-//    background(0,0,0,5);
+   background(0,0,0,1);
 
     var start = createVector(0, 0);
     var dist = 3;
@@ -88,6 +88,8 @@ function draw() {
 //        var point = center;
         drawTick(point, g1);
     }
+    mod += Math.floor(random(-5, 5));
+    mod = max(min(mod, 30), 1);
 }
 
 

@@ -1,7 +1,5 @@
 let center;
 // var colors = []
-let saturation, value;
-let lineWidth;
 let g1;
 
 var currentTime = 0;
@@ -19,8 +17,8 @@ var currentTime = 0;
 // const modAddRange = 5;
 
 // Setting 2 - beam
-var maxK = 20000;
-var minK = 1500;
+var maxK = 12000;
+var minK = 1800;
 const FR = 12;
 const dMin = 1, dMax = 1;
 const modMin = 0, modMax = 0;
@@ -28,15 +26,10 @@ const dt = 0.1;
 const backgroundAlpha = 70;
 const modAddRange = 0;
 let mod = 1;
-let holdMod = 1
 
-var prevPoint;
-
-var mode = false;
-var i = 0;
+var point = createVector(0, 0);
 
 function setup() {
-    prevPoint = createVector(0, 0);
     var c = createCanvas(windowWidth, windowHeight);
 
     center = createVector(windowWidth /2, windowHeight / 2);
@@ -49,8 +42,6 @@ function setup() {
     // g1 = tempToRGB(K);
 
     background(0);
-
-    lineWidth = random(10, 90);
 
 
     // smooth();
@@ -71,34 +62,17 @@ function makeColors() {
     return colors;
 }
 
-function drawTick(point, c, frame) {
+function drawTick(point, c) {
 
-    if (mode) {
-        rect(
-            point.x,
-            0,
-            4,
-            windowHeight
-        );
-    } else {
-        rect(
-            prevPoint.x,
-            0,
-            4 + i,
-            windowHeight
-        )
-    }
-    
+    rect(
+        point.x,
+        0,
+        4,
+        windowHeight
+    );
     strokeWeight(0);
     fill(c);
-
-    if (frame % (FR * holdMod) == 0) {
-        prevPoint = point;
-        mode = !mode;
-        i = 0;
-        holdMod = random(0.3, 4);
-    }
-    i ++;
+    
 }
 
 function draw() {
@@ -113,9 +87,9 @@ function draw() {
     var dist = random(dMin, dMax);
     if(frameCount % mod == 0) {
         let moddedDist = (dist * frameCount) % windowWidth;
-        var point = start.copy().add(moddedDist, 0);
+        point = start.copy().add(moddedDist, 0);
 //        var point = center;
-        drawTick(point, g1, frameCount);
+        drawTick(point, g1);
     }
     // mod += Math.floor(random(-modAddRange, modAddRange));
     // mod = max(min(mod, modMax), modMin);
@@ -189,7 +163,7 @@ function tempToRGB(K) {
     b = clamp(b);
     c = color(r, g, b);
 
-    // console.log(temp, r, g, b);
+    console.log(temp, r, g, b);
     return color(c);
 }
 

@@ -3,19 +3,38 @@ let center;
 let saturation, value;
 let lineWidth;
 let g1;
-let mod;
-
 
 var currentTime = 0;
-var maxK = 12000;
+
+// Setting 1 - corchestra
+
+// let mod = 1;
+// var maxK = 20000;
+// var minK = 1500;
+// const FR = 4;
+// const dMin = 0, dMax = 2;
+// const modMin = 1, modMax = 1;
+// const dt = 0.1;
+// const backgroundAlpha = 100;
+// const modAddRange = 5;
+
+// Setting 2 - beam
+var maxK = 20000;
 var minK = 1500;
+const FR = 12;
+const dMin = 1, dMax = 1;
+const modMin = 0, modMax = 0;
+const dt = 0.1;
+const backgroundAlpha = 70;
+const modAddRange = 0;
+let mod = 1;
 
 function setup() {
     var c = createCanvas(windowWidth, windowHeight);
 
     center = createVector(windowWidth /2, windowHeight / 2);
     colorMode(RGB, 255);
-    frameRate(30);
+    frameRate(FR);
 
     currentTime = (currentTime + 0.05);
     // let currentTime = currentHourAsFloat();
@@ -25,9 +44,6 @@ function setup() {
     background(0);
 
     lineWidth = random(10, 90);
-
-    // mod = Math.floor(random(1, 20));
-    mod = 1
 
 
     // smooth();
@@ -53,43 +69,31 @@ function drawTick(point, c) {
     rect(
         point.x,
         0,
-        10,
+        4,
         windowHeight
     );
-    
-    // var alot = 1000;
     strokeWeight(0);
     fill(c);
-
-    // beginShape();
-    // vertex(point.x - center.x, 0);
-    // vertex(point.x, point.y);
-    // vertex(point.x - center.x, windowHeight);
-    // vertex(point.x - center.x, windowHeight - lineWidth);
-    // vertex(point.x - lineWidth, point.y);
-    // vertex(point.x - center.x, lineWidth);
-    // endShape(CLOSE);
 }
 
 function draw() {
-    currentTime = (currentTime + 0.01);
+    currentTime = (currentTime + dt);
     // let currentTime = currentHourAsFloat();
     let K = hourToK(currentTime);
     g1 = tempToRGB(K);
 
-
-   background(0,0,0,1);
-
+   background(0,0,0,backgroundAlpha);
     var start = createVector(0, 0);
-    var dist = 3;
+    // var dist = 3;
+    var dist = random(dMin, dMax);
     if(frameCount % mod == 0) {
         let moddedDist = (dist * frameCount) % windowWidth;
         var point = start.copy().add(moddedDist, 0);
 //        var point = center;
         drawTick(point, g1);
     }
-    mod += Math.floor(random(-5, 5));
-    mod = max(min(mod, 30), 1);
+    // mod += Math.floor(random(-modAddRange, modAddRange));
+    // mod = max(min(mod, modMax), modMin);
 }
 
 

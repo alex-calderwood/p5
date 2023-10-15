@@ -4,12 +4,21 @@ let columns;
 let rows;
 let board;
 let next;
+let poem;
+
+function preload() {
+    // text = loadStrings("text.txt");
+    // console.log(text)
+    poem = "—But a lovely mummer! he murmured to himself. Kinch, the loveliest mummer of them all! He shaved evenly and with care, in silence, seriously. Stephen, an elbow rested on the jagged granite, leaned his palm against his brow and gazed at the fraying edge of his shiny black coat-sleeve. Pain, that was not yet the pain of love, fretted his heart. Silently, in a dream she had come to him after her death, her wasted body within its loose brown graveclothes giving off an odour of wax and rosewood, her breath, that had bent upon him, mute, reproachful, a faint odour of wetted ashes. Across the threadbare cuffedge he saw the sea hailed as a great sweet mother by the wellfed voice beside him. The ring of bay and skyline held a dull green mass of liquid. A bowl of white china had stood beside her deathbed holding the green sluggish bile which she had torn up from her rotting liver by fits of loud groaning vomiting. Buck Mulligan wiped again his razorblade. —Ah, poor dogsbody! he said in a kind voice. I must give you a shirt and a few noserags. How are the secondhand breeks? —They fit well enough, Stephen answered. Buck Mulligan attacked the hollow beneath his underlip. ";
+    // split based on lines and spaces into a 2D array
+    poem = poem.split(" ");
+}
 
 function setup() {
   // Set simulation framerate to 10 to avoid flickering
   frameRate(10);
   createCanvas(720, 400);
-  w = 20;
+  w = 40;
   // Calculate columns and rows
   columns = floor(width / w);
   rows = floor(height / w);
@@ -29,6 +38,7 @@ function setup() {
 function draw() {
   background(255);
   generate();
+  let index = 0;
   for ( let i = 0; i < columns;i++) {
     for ( let j = 0; j < rows;j++) {
       if ((board[i][j] == 1))  {
@@ -36,12 +46,14 @@ function draw() {
         stroke(0);
         // draw text at the center of the cell
         textAlign(CENTER);
-        text("alive", i * w + w / 2, j * w + w / 2);
+        text(poem[index], i * w + w / 2, j * w + w / 2);
       } else {
         fill(255);
       }
     //   stroke(0);
     //   rect(i * w, jr * w, w-1, w-1);
+    index ++;
+    index %= poem.length;
     }
   }
 

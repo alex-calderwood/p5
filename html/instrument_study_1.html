@@ -34,6 +34,9 @@
         width: 100%; /* Make textareas fill the available space */
         height: 80%; /* Make textareas fill the available space */
         border: none; /* Remove textarea border */
+        /* make the background of the scroll bar black */
+        scrollbar-color: #000 #000;
+        scrollbar-width: thin;
       }
 
       /* Style for the side-by-side text areas */
@@ -47,12 +50,7 @@
       .text {
         display: fixed;
         padding: 20px;
-      }
-
-      /* Style for individual text areas */
-      #corpus_select, #realization {
-        flex: 1; /* Make textareas grow to fill available space equally */
-        margin: 5px; /* Add margin for spacing between text areas */
+        width: 25%;
       }
 
       /* Style for the submit button */
@@ -73,6 +71,15 @@
         color: #000;
       }
 
+
+      ::-webkit-scrollbar { width: 8px; height: 3px;}
+      ::-webkit-scrollbar-button {  background-color: #666; }
+      ::-webkit-scrollbar-track {  background-color: #646464;}
+      ::-webkit-scrollbar-track-piece { background-color: #000;}
+      ::-webkit-scrollbar-thumb { height: 50px; background-color: #666; border-radius: 3px;}
+      ::-webkit-scrollbar-corner { background-color: black;}
+      ::-webkit-resizer { background-color: black;}
+
     </style>
     <script type="text/javascript" src="../lib/p5.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
@@ -92,7 +99,8 @@
       <button class="submit_button" id="submit3" onclick="submitCallback(3)">&#x2702;</button>
     </div>
     <div class="text" id="fixed">
-      <textarea id="realization" rows="10" cols="50" oninput="realizationEditCallback(this.value)"></textarea>
+      <textarea class="realization" id="corpus4" rows="10" cols="50" oninput="realizationEditCallback(this.value)"></textarea>
+      <button class="submit_button" id="submit3" onclick="submitCallback(4)">&#x2702;</button>
     </div>
   </div>
 

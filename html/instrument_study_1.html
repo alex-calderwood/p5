@@ -9,19 +9,99 @@
         padding: 0;
         overflow: hidden; /* This can be used to remove scrollbars if needed. */
       }
+
+      #canvas-container {
+          position: relative;
+          width: 100%;
+          height: 100vh; /* Set the height to 100% of the viewport height */
+      }
+
+      .p5-canvas {
+          position: absolute;
+          width: 100%;
+          height: 100%; /* Set the canvas dimensions to 100% of the container */
+      }
+
       /* Make the background black */
       html, body {
         background-color: #000;
       }
+
+      /* Make the text white and background black */
+      textarea {
+        color: #fff;
+        background-color: #000;
+        width: 100%; /* Make textareas fill the available space */
+        height: 80%; /* Make textareas fill the available space */
+        border: none; /* Remove textarea border */
+      }
+
+      /* Style for the side-by-side text areas */
+      #textboxes {
+        display: flex; /* Use flexbox to align elements side by side */
+        justify-content: space-between; /* Space them evenly */
+        padding: 5px; /* Add some padding for spacing */
+        /* width: 100%; Make the text areas fill the available space */
+      }
+
+      .text {
+        display: fixed;
+        padding: 20px;
+      }
+
+      /* Style for individual text areas */
+      #corpus_select, #realization {
+        flex: 1; /* Make textareas grow to fill available space equally */
+        margin: 5px; /* Add margin for spacing between text areas */
+      }
+
+      /* Style for the submit button */
+      .submit_button {
+        width: 100%; /* Make the button fill the available space */
+        height: 20%;
+        margin: 0px;
+        margin-bottom: 20px;
+        /* make the border and text white */
+        color: #fff;
+        background-color: #000;
+        border: 1px solid #fff;
+        padding: 10px;
+        cursor: pointer; /* Change cursor on hover */
+      }
+      .submit_button:hover {
+        background-color: #fff;
+        color: #000;
+      }
+
     </style>
-      <script type="text/javascript" src="../lib/p5.js"></script>
-      <!-- <script src="
-        https://cdn.jsdelivr.net/npm/p5@1.7.0/lib/p5.min.js
-      "></script> -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
-      <!-- <script src="https://unpkg.com/@free-side/audioworklet-polyfill/dist/audioworklet-polyfill.js"></script> -->
-      <script type="text/javascript" src="../js/instrument_study_1.js"></script>
+    <script type="text/javascript" src="../lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
   </head>
   <body>
+  <div id="textboxes">
+    <div class="text" id="free">
+      <textarea id="corpus1" rows="10" cols="50" placeholder="cut up text here"></textarea>
+      <button class="submit_button" id="submit1" onclick="submitCallback(1)">&#x2702;</button>
+    </div>
+    <div class="text" id="free2">
+      <textarea id="corpus2" rows="10" cols="50" placeholder="cut up text here"></textarea>
+      <button class="submit_button" id="submit2" onclick="submitCallback(2)">&#x2702;</button>
+    </div>
+    <div class="text" id="free3">
+      <textarea id="corpus3" rows="10" cols="50" placeholder="cut up text here"></textarea>
+      <button class="submit_button" id="submit3" onclick="submitCallback(3)">&#x2702;</button>
+    </div>
+    <div class="text" id="fixed">
+      <textarea id="realization" rows="10" cols="50" oninput="realizationEditCallback(this.value)"></textarea>
+    </div>
+  </div>
+
+    <div id="canvas-container">
+      
+    </div>
+    <script type="text/javascript" src="../js/instrument_study_1.js"></script>
+
   </body>
 </html>
+
+

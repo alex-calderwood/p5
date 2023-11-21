@@ -44,7 +44,7 @@ let grammarIndex = 0;
 
 let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
 
-const userSpecifiedHeight = 420;
+const userSpecifiedHeight = 600;
 
 let selectedSample = 0;
 
@@ -140,7 +140,7 @@ class SlidyWindow {
         this.selectedTrack = 0;
         this.knobOffset = 0
         this.selectedTrackBaseIndex = 0;
-        this.numTracks = 30;
+        this.numTracks = 20;
         this.trackHeight = this.loc[3] / this.numTracks;
         this.tracks = [];
 
@@ -167,10 +167,13 @@ class SlidyWindow {
     }
 
     updateNote(track, note) {
-        console.log(track, note)
+        // update the word itself
+        if (textArray[track] === '') {
+            xLocs[track]        = width; // startX - textWidth(textArray[track]) * 2;
+            speeds[track]       = baseSpeed;
+        }
+
         textArray[track]    = grammar[note % grammar.length];
-        xLocs[track]        = startX - textWidth(textArray[track]) * 2;
-        speeds[track]       = baseSpeed;
         realization.add(textArray[track]);
     }
 
@@ -178,6 +181,10 @@ class SlidyWindow {
         textArray[track]    = '';
         xLocs[track]        = startX;
         speeds[track]       = baseSpeed;
+    }
+
+    moveWord(track, offset) {
+        xLocs[track] += offset;
     }
 
     draw() {
@@ -220,13 +227,16 @@ class Track {
         xLocs[this.i] -= speeds[this.i]
 
         if (xLocs[this.i] < -textWidth(textArray[this.i])) {
+            xLocs[this.i] = width;
             if (this.looping) {
-                xLocs[this.i] = width;
+                // reset to the right side of the screen
+                realization.add(textArray[this.i]);
             } else {
+                // reset to the right side of the screen, and clear the text
                 textArray[this.i] = "";
-                xLocs[this.i] = width;
             }
         }
+        
         // Draw the selected track indicator
         if (this.i === slidyWindow.selectedTrack) {
             stroke(255);
@@ -443,6 +453,10 @@ function keyPressed() {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     } else if (keyCode === UP_ARROW) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex - 1, slidyWindow.knobOffset);
+    } else if (keyCode === LEFT_ARROW) {
+        slidyWindow.moveWord(slidyWindow.selectedTrack, -10);
+    } else if (keyCode === RIGHT_ARROW) {
+        slidyWindow.moveWord(slidyWindow.selectedTrack, 10);
     } else if (keyCode === 8) { // delete
         slidyWindow.resetNote(slidyWindow.selectedTrack);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);

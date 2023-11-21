@@ -19,7 +19,7 @@ let textArray;
 let maxTracksNum;
 let start;
 
-let virtualMidiKeyboard = false;
+let virtualMidiKeyboard = true;
 
 let textS = 16
 let startX;
@@ -42,9 +42,11 @@ let knobs;
 
 let grammarIndex = 0;
 
-let channels = [1, 2]; // The channel number must be in this list to be displayed
+let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
 
-const userSpecifiedHeight = 680;
+const userSpecifiedHeight = 420;
+
+let selectedSample = 0;
 
 class Realization {
     constructor() {
@@ -138,7 +140,7 @@ class SlidyWindow {
         this.selectedTrack = 0;
         this.knobOffset = 0
         this.selectedTrackBaseIndex = 0;
-        this.numTracks = 40;
+        this.numTracks = 30;
         this.trackHeight = this.loc[3] / this.numTracks;
         this.tracks = [];
 
@@ -165,9 +167,11 @@ class SlidyWindow {
     }
 
     updateNote(track, note) {
+        console.log(track, note)
         textArray[track]    = grammar[note % grammar.length];
         xLocs[track]        = startX - textWidth(textArray[track]) * 2;
         speeds[track]       = baseSpeed;
+        realization.add(textArray[track]);
     }
 
     resetNote(track) {
@@ -216,7 +220,6 @@ class Track {
         xLocs[this.i] -= speeds[this.i]
 
         if (xLocs[this.i] < -textWidth(textArray[this.i])) {
-            realization.add(textArray[this.i]);
             if (this.looping) {
                 xLocs[this.i] = width;
             } else {
@@ -321,9 +324,27 @@ function handleMIDIMessage(message) {
     }
 
     // console.log(message.currentTarget.name, command, note, velocity)
-    // if (command === 248 ) { // sync messages, don't want to display
-    //     return;
-    // }
+    if (command === 248 ) { // sync messages, don't want to display
+        return;
+    }
+
+    if (channelNumber == 10) {
+        let index;
+
+        if (command == 137) {
+            if (note == 40) {
+                index = 0;
+            } else if (note == 38) {
+                index = 1;
+            } else if (note == 46) {
+                index = 2;
+            } else if (note == 44) {
+                index = 3;
+            }
+            submitCallback(index.toString());
+        }
+        
+    }
 
     // info dump (for debugging, etc.)
     fill(0);
@@ -337,7 +358,7 @@ function handleMIDIMessage(message) {
     text('Velocity: ' + velocity,     textLocation[0], textLocation[1] + 20);
     text('Event: '    + eventType,    textLocation[0], textLocation[1] + 40);
 
-    // console.log(command, note, velocity)
+    console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
 
     if (eventType === 9) { // Note on message
         let x = s(range[0], range[1], 0, width, note);
@@ -347,8 +368,9 @@ function handleMIDIMessage(message) {
         updateColor();
 
         playSynth();
+
+
         slidyWindow.updateNote(slidyWindow.selectedTrack, note);
-        
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     }
     else if (eventType === 8) { // Note off message
@@ -379,6 +401,8 @@ function handleMIDIMessage(message) {
         }
         else if (note === 123) { // All notes off
         }
+    } else if (eventType == 14) {
+        
     }
 }
 
@@ -399,6 +423,17 @@ function s(start, end, newStart, newEnd, val) {
 function keyTyped() {
     if (key === 'l') {
         slidyWindow.tracks[slidyWindow.selectedTrack].looping = !slidyWindow.tracks[slidyWindow.selectedTrack].looping;
+    } else {
+        if (virtualMidiKeyboard) {
+            handleMIDIMessage({
+                data: [
+                    144,
+                    keyCode,
+                    100
+                ]
+            });
+            return false; // suppress default
+        }
     }
   }
 
@@ -421,6 +456,7 @@ function keyPressed() {
     //     virtualMidiKeyboard = !virtualMidiKeyboard;
     // }
     // else {
+    //     console.log(keyCode)
     //     if (virtualMidiKeyboard) {
     //         handleMIDIMessage({
     //             data: [

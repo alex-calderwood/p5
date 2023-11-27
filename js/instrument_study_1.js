@@ -15,19 +15,18 @@ for (let i = 1; i <= 3; i++) {
 
 let grammar = library["cutup"].split(" ");
 
-let textArray;
+// USER SETTINGS
+const virtualMidiKeyboard = true;
+const userSpecifiedHeight = 600;
+const userSpecifiedNumTracks = 20;
+const baseSpeed = 3;
+const maxSpeed = 20; // pixels / frame
+
 let maxTracksNum;
 let start;
 
-let virtualMidiKeyboard = true;
-
 let textS = 16
 let startX;
-
-let speeds = []
-let baseSpeed = 3;
-let maxSpeed = 20; // pixels / frame
-let xLocs = []
 
 let midiAccess;
 let curMessage;
@@ -44,7 +43,6 @@ let grammarIndex = 0;
 
 let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
 
-const userSpecifiedHeight = 600;
 
 let selectedSample = 0;
 
@@ -57,10 +55,6 @@ class Realization {
         if (text !== "") {
             this.realization.push(text);
         }
-
-        // add the text to  <textarea id="realization" rows="10" cols="50" readonly></textarea>
-        // let realizationTextArea = document.getElementById('realization');
-        // now it has the class 'realization'
         let realizationTextArea = document.getElementsByClassName('realization')[0];
         realizationTextArea.value = this.realization.join(" ");
     }
@@ -88,16 +82,15 @@ function realizationEditCallback(value) {
 
 
 class Corpus {
-      submitCallback(n) {
+      updateCorpus(n) {
         // get the value of corpus<n> from the html
         let corpusValue = document.getElementById("corpus" + n).value;
         grammar = corpusValue.split(" ");
-
       }
 }
 let corpus = new Corpus();
 function submitCallback(n) {
-    corpus.submitCallback(n);
+    corpus.updateCorpus(n);
 }
 
 class Knobs {
@@ -140,7 +133,7 @@ class SlidyWindow {
         this.selectedTrack = 0;
         this.knobOffset = 0
         this.selectedTrackBaseIndex = 0;
-        this.numTracks = 20;
+        this.numTracks = userSpecifiedNumTracks;
         this.trackHeight = this.loc[3] / this.numTracks;
         this.tracks = [];
 
@@ -152,39 +145,23 @@ class SlidyWindow {
     reset() {
         // TODO: reset all tracks
         for (let i = 0; i < this.numTracks; i++) {
-            textArray[i] = '';
-            xLocs[i] = startX;
-            speeds[i] = baseSpeed;
+            this.tracks[i].text = '';
+            this.tracks[i].xLoc = startX;
+            this.tracks[i].speed = baseSpeed;
         }
-        this.selectedTrack = this.updateSelectedTrack(0, this.knobOffset);
+        this.updateSelectedTrack(0, this.knobOffset);
     }
 
     newTrack() {
-        this.tracks.push(new Track(this.tracks.length, this.trackHeight));
-        textArray.push('');
-        xLocs.push(startX);
-        speeds.push();
-    }
-
-    updateNote(track, note) {
-        // update the word itself
-        if (textArray[track] === '') {
-            xLocs[track]        = width; // startX - textWidth(textArray[track]) * 2;
-            speeds[track]       = baseSpeed;
-        }
-
-        textArray[track]    = grammar[note % grammar.length];
-        realization.add(textArray[track]);
+        this.tracks.push(new IndexTrack(this.tracks.length, this.trackHeight));
     }
 
     resetNote(track) {
-        textArray[track]    = '';
-        xLocs[track]        = startX;
-        speeds[track]       = baseSpeed;
+        this.tracks[track].resetNote();
     }
 
     moveWord(track, offset) {
-        xLocs[track] += offset;
+        this.tracks[track].xLoc += offset;
     }
 
     draw() {
@@ -203,6 +180,12 @@ class SlidyWindow {
         this.knobOffset = knobOffset;
         this.selectedTrack = this.selectedTrack < 0 ? maxTracksNum + this.selectedTrack : this.selectedTrack;
         this.selectedTrack = (this.selectedTrackBaseIndex + this.knobOffset) % maxTracksNum;
+
+        console.log("selected track", this.selectedTrack);
+        for (let i = 0; i < this.tracks.length; i++) {
+            this.tracks[i].selected = this.selectedTrack == i;
+            console.log("s", this.tracks[i].selected)
+        }
     }
 }
 
@@ -211,38 +194,66 @@ class Track {
         this.i = i;
         this.trackHeight = height;
         this.looping = false;
+        this.selected = false;
 
-        this.loc = [0, this.i * this.trackHeight, width, this.i * this.trackHeight + this.trackHeight];
+        this.text = '';
+        this.xLoc = startX;
+        this.speed = baseSpeed;
+
+        this.bounds = [0, this.i * this.trackHeight, width, this.i * this.trackHeight + this.trackHeight];
+    }
+
+    updateNote(note) {
+        // update the word itself
+        if (this.text === '') {
+            this.xLoc   = width; // startX - textWidth(textArray[track]) * 2;
+            this.speed  = baseSpeed;
+        }
+
+        console.log(this.i)
+        this.text    = grammar[note % grammar.length];
+        realization.add(this.text);
+    }
+
+    resetNote() {
+        this.text = '';
+        this.xLoc = startX;
+        this.speed = baseSpeed;
     }
 
     draw() {
         let fillColor = this.looping ?  255 : 0;
         fill(fillColor);
-        rect(this.loc[0], this.loc[1], this.loc[2], this.loc[3]);
 
-        let lineText = textArray[this.i].toUpperCase();
+        rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
+
+        let lineText = this.text.toUpperCase();
         fillColor = this.looping ? 0 : 255;
         fill(fillColor);
-        text(lineText, xLocs[this.i], this.i * this.trackHeight);
-        xLocs[this.i] -= speeds[this.i]
+        text(lineText, this.xLoc, this.i * this.trackHeight);
+        this.xLoc -= this.speed;
 
-        if (xLocs[this.i] < -textWidth(textArray[this.i])) {
-            xLocs[this.i] = width;
+        if (this.xLoc < -textWidth(this.text)) {
+            this.xLoc = width;
             if (this.looping) {
                 // reset to the right side of the screen
-                realization.add(textArray[this.i]);
+                realization.add(this.text);
             } else {
                 // reset to the right side of the screen, and clear the text
-                textArray[this.i] = "";
+                this.text = "";
             }
         }
         
         // Draw the selected track indicator
-        if (this.i === slidyWindow.selectedTrack) {
-            stroke(255);
+        if (this.selected) {
+            // stroke(255);
+
+            let strokeColor = this.looping ? 0 : 255;
+            stroke(strokeColor, strokeColor, strokeColor);
+
             strokeWeight(2);
             noFill();
-            rect(this.loc[0], this.loc[1], this.loc[2], this.loc[3]);
+            rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
         //     // draw a line through the center TODO not working
             // line(this.loc[0], this.loc[1] + this.loc[3] / 2, this.loc[2], this.loc[1] + this.loc[3] / 2);
             
@@ -251,6 +262,18 @@ class Track {
         }
     }
 }
+
+
+class IndexTrack extends Track {
+    constructor(i, height) {
+        super(i, height);
+    }
+
+    draw() {
+        super.draw();
+    }
+}
+
 
 function setup() {
     noStroke();
@@ -263,6 +286,7 @@ function setup() {
 
     if (navigator.requestMIDIAccess) {
         navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
+        console.log('This browser supports WebMIDI!');
     } else {
         console.warn("WebMIDI is not supported in this browser.");
     }
@@ -273,11 +297,6 @@ function setup() {
     startX = width;
     start = createVector(0, 0)
     frameRate(26);
-
-    for(let _ of textArray) {
-        speeds.push(3);
-        xLocs.push(startX)
-    }
 
     slidyWindow = new SlidyWindow([0, 0, width, height - 100]);
     textLocation = [width - 100, slidyWindow.loc[3]];
@@ -291,7 +310,6 @@ function setup() {
     // for (let i = 0; i < submitButtons.length; i++) {
     //     submitButtons[i].style.height = 2 * slidyWindow.trackHeight + "px";
     // }
-
 }
 
 
@@ -299,6 +317,7 @@ function onMIDISuccess(midi) {
     midiAccess = midi;
     let inputs = midiAccess.inputs.values();
     for (let input of inputs) {
+        console.log("input", input)
         input.onmidimessage = handleMIDIMessage;
     }
 }
@@ -309,14 +328,14 @@ function onMIDIFailure() {
 
 function setSpeeds(newSpeed) {
     baseSpeed = newSpeed;
-    for (let i = 0; i < speeds.length; i++) {
-        speeds[i] = newSpeed;
+    for (let track of slidyWindow.tracks) {
+        track.speed = newSpeed;
     }
 }
 
 function setSpeed(i, newSpeed) {
     baseSpeed = newSpeed;
-    speeds[i] = newSpeed;
+    slidyWindow.tracks[i].speed = newSpeed;
 }
 
 function handleMIDIMessage(message) {
@@ -328,19 +347,17 @@ function handleMIDIMessage(message) {
     note = message.data[1] ? message.data[1] : 0;
     velocity = (message.data.length > 2) ? message.data[2] : 0;
 
-    // if the int channelIndex is not in the list of indices channels, return
+    // if the int channelIndex is not in the list of indices 'channels', return
     if (!channels.includes(channelNumber)) {
         return;
     }
 
-    // console.log(message.currentTarget.name, command, note, velocity)
     if (command === 248 ) { // sync messages, don't want to display
         return;
     }
 
-    if (channelNumber == 10) {
+    if (channelNumber == 10) { // Update the grammar based on the text in the 4 input boxes
         let index;
-
         if (command == 137) {
             if (note == 40) {
                 index = 0;
@@ -353,7 +370,6 @@ function handleMIDIMessage(message) {
             }
             submitCallback(index.toString());
         }
-        
     }
 
     // info dump (for debugging, etc.)
@@ -363,12 +379,12 @@ function handleMIDIMessage(message) {
     rect(textLocation[0], textLocation[1], textLocation[0] + 100, textLocation[1] + 50);
     fill(255);
     text('Channel: '  + channelNumber, textLocation[0], textLocation[1] + 30);
-    text('Command: '  + command,      textLocation[0], textLocation[1]);
-    text('Note: '     + note,         textLocation[0], textLocation[1] + 10);
-    text('Velocity: ' + velocity,     textLocation[0], textLocation[1] + 20);
-    text('Event: '    + eventType,    textLocation[0], textLocation[1] + 40);
+    text('Command: '  + command,       textLocation[0], textLocation[1]);
+    text('Note: '     + note,          textLocation[0], textLocation[1] + 10);
+    text('Velocity: ' + velocity,      textLocation[0], textLocation[1] + 20);
+    text('Event: '    + eventType,     textLocation[0], textLocation[1] + 40);
 
-    console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
+    // console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
 
     if (eventType === 9) { // Note on message
         let x = s(range[0], range[1], 0, width, note);
@@ -379,9 +395,8 @@ function handleMIDIMessage(message) {
 
         playSynth();
 
-
-        slidyWindow.updateNote(slidyWindow.selectedTrack, note);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
+        slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
     }
     else if (eventType === 8) { // Note off message
         offSynth();
@@ -494,7 +509,7 @@ function offSynth() {
 
 
 function preload() {
-  textArray = []
+    // pass
 }
 
 function reset() {
@@ -509,6 +524,5 @@ function draw() {
 }
 
 function mousePressed() {
-    //   shuffle(textArray, true);
-    //   shuffle(speeds, true);
+    
 }

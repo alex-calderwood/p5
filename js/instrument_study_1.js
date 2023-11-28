@@ -1,3 +1,5 @@
+let base_url = 'http://127.0.0.1:5000';
+
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
     "genres": "comedy tragedy history romance tragicomedy fantasy musical melodrama",
@@ -21,6 +23,8 @@ const userSpecifiedHeight = 600;
 const userSpecifiedNumTracks = 20;
 const baseSpeed = 3;
 const maxSpeed = 20; // pixels / frame
+const shiftAmount = 35; // pixels
+const visualDebug = true;
 
 let maxTracksNum;
 let start;
@@ -43,8 +47,29 @@ let grammarIndex = 0;
 
 let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
 
-
 let selectedSample = 0;
+
+
+function getCreative(leftwords, rightwords, badwords) {
+    return fetch(base_url + '/bert', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            leftwords: leftwords,
+            rightwords: rightwords,
+            badwords: badwords,
+        }),
+        mode: 'cors'
+    }).then(response => {
+        return response.json()
+    })
+    .then(data => {
+        console.log("data", data)
+        return data
+    })
+}
 
 class Realization {
     constructor() {
@@ -138,7 +163,7 @@ class SlidyWindow {
         this.tracks = [];
 
         for (let i = 0; i < this.numTracks; i++) {
-            this.newTrack();
+            this.initTrack(i);
         }
     }
 
@@ -152,12 +177,15 @@ class SlidyWindow {
         this.updateSelectedTrack(0, this.knobOffset);
     }
 
-    newTrack() {
-        this.tracks.push(new IndexTrack(this.tracks.length, this.trackHeight));
+    initTrack(i) {
+        let track = i % 2 == 0 ? 
+              new IndexTrack(this.tracks.length, this.trackHeight)
+            : new CreativeTrack(this.tracks.length, this.trackHeight);
+        this.tracks.push(track);
     }
 
     resetNote(track) {
-        this.tracks[track].resetNote();
+        this.tracks[track].hardResetNote();
     }
 
     moveWord(track, offset) {
@@ -181,10 +209,8 @@ class SlidyWindow {
         this.selectedTrack = this.selectedTrack < 0 ? maxTracksNum + this.selectedTrack : this.selectedTrack;
         this.selectedTrack = (this.selectedTrackBaseIndex + this.knobOffset) % maxTracksNum;
 
-        console.log("selected track", this.selectedTrack);
         for (let i = 0; i < this.tracks.length; i++) {
             this.tracks[i].selected = this.selectedTrack == i;
-            console.log("s", this.tracks[i].selected)
         }
     }
 }
@@ -201,46 +227,60 @@ class Track {
         this.speed = baseSpeed;
 
         this.bounds = [0, this.i * this.trackHeight, width, this.i * this.trackHeight + this.trackHeight];
+
+        this.mainColor = 255;
+        this.secondaryColor = 0;
+    }
+
+    setLooping(newValue) {
+        this.looping = newValue;
+        this.mainColor = newValue ? 0 : 255;
+        this.secondaryColor = newValue ? 255 : 0;
     }
 
     updateNote(note) {
-        // update the word itself
         if (this.text === '') {
-            this.xLoc   = width; // startX - textWidth(textArray[track]) * 2;
-            this.speed  = baseSpeed;
+            this.hardResetNote();
         }
 
-        console.log(this.i)
         this.text    = grammar[note % grammar.length];
         realization.add(this.text);
+
+        this.setLooping(true);
     }
 
-    resetNote() {
+    hardResetNote() {
         this.text = '';
         this.xLoc = startX;
         this.speed = baseSpeed;
     }
 
-    draw() {
-        let fillColor = this.looping ?  255 : 0;
-        fill(fillColor);
+    softResetNote() {
+        this.xLoc = startX + textWidth(this.text);
+        this.speed = baseSpeed;
+    }
 
+    draw() {
+        fill(this.secondaryColor);
         rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
 
         let lineText = this.text.toUpperCase();
-        fillColor = this.looping ? 0 : 255;
-        fill(fillColor);
+        if (visualDebug) {
+            fill(255, 0, 0)
+            rect(this.xLoc, this.i * this.trackHeight, this.xLoc + 4, this.i * this.trackHeight + this.trackHeight);
+        }
+        fill(this.mainColor);
         text(lineText, this.xLoc, this.i * this.trackHeight);
         this.xLoc -= this.speed;
 
         if (this.xLoc < -textWidth(this.text)) {
-            this.xLoc = width;
             if (this.looping) {
                 // reset to the right side of the screen
                 realization.add(this.text);
+                this.softResetNote();
             } else {
                 // reset to the right side of the screen, and clear the text
-                this.text = "";
+                this.hardResetNote();
             }
         }
         
@@ -248,18 +288,27 @@ class Track {
         if (this.selected) {
             // stroke(255);
 
-            let strokeColor = this.looping ? 0 : 255;
+            let strokeColor = this.mainColor;
             stroke(strokeColor, strokeColor, strokeColor);
 
             strokeWeight(2);
             noFill();
             rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
-        //     // draw a line through the center TODO not working
-            // line(this.loc[0], this.loc[1] + this.loc[3] / 2, this.loc[2], this.loc[1] + this.loc[3] / 2);
             
             noStroke();
             noFill()
         }
+
+        if (mouseX > this.bounds[0] && mouseX < this.bounds[2] && mouseY > this.bounds[1] && mouseY < this.bounds[3]) {
+            let nextTrackType = getNextTrackType(this.constructor);
+            nextTrackType.doDrawTrackIndicator(this.mainColor, this.bounds);
+        } else {
+            this.constructor.doDrawTrackIndicator(this.mainColor, this.bounds);
+        }
+    }
+
+    static doDrawTrackIndicator(color, bounds) {
+        // do nothing
     }
 }
 
@@ -272,8 +321,65 @@ class IndexTrack extends Track {
     draw() {
         super.draw();
     }
+
+
+    static doDrawTrackIndicator(color, bounds) {
+        // Do nothing
+    }
 }
 
+class CreativeTrack extends Track {
+    constructor(i, height) {
+        super(i, height);
+        this.history = [];
+    }
+
+    draw() {
+        super.draw();
+
+        // draw a small square in the far left
+        IndexTrack.doDrawTrackIndicator(this.mainColor, this.bounds);
+    }
+
+    hardResetNote() {
+        super.hardResetNote();
+        this.history = [];
+    }
+
+    softResetNote() {
+        super.softResetNote();
+        this.updateNote();
+    }
+
+    updateNote(note) {
+        if (this.text === '') {
+            this.hardResetNote();
+        }
+
+        // more elegant way to do this:
+        let leftwords = slidyWindow.tracks.slice(0, this.i).map(track => track.text);
+        let rightwords = slidyWindow.tracks.slice(this.i + 1, slidyWindow.tracks.length).map(track => track.text);
+
+        getCreative(leftwords, rightwords, this.history).then(word => {
+            console.log(leftwords, rightwords, "returns", word)
+            this.text = word
+            realization.add(this.text.toUpperCase());
+            this.history.push(word);
+        })
+    }
+
+    static doDrawTrackIndicator(color, bounds) {
+        fill(color);
+        let h = bounds[3] - bounds[1];
+        rect(bounds[0] + h/4 , bounds[1] + h/4, bounds[0] + h * 3/4, bounds[1] + h * 3/4);
+    }
+}
+
+
+let trackCycle = [IndexTrack, CreativeTrack];
+function getNextTrackType(trackType) {
+    return trackCycle[(trackCycle.indexOf(trackType) + 1) % trackCycle.length];
+}
 
 function setup() {
     noStroke();
@@ -317,7 +423,6 @@ function onMIDISuccess(midi) {
     midiAccess = midi;
     let inputs = midiAccess.inputs.values();
     for (let input of inputs) {
-        console.log("input", input)
         input.onmidimessage = handleMIDIMessage;
     }
 }
@@ -395,8 +500,9 @@ function handleMIDIMessage(message) {
 
         playSynth();
 
-        slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
+        slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
+
     }
     else if (eventType === 8) { // Note off message
         offSynth();
@@ -447,7 +553,7 @@ function s(start, end, newStart, newEnd, val) {
 
 function keyTyped() {
     if (key === 'l') {
-        slidyWindow.tracks[slidyWindow.selectedTrack].looping = !slidyWindow.tracks[slidyWindow.selectedTrack].looping;
+        slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
     } else {
         if (virtualMidiKeyboard) {
             handleMIDIMessage({
@@ -469,34 +575,16 @@ function keyPressed() {
     } else if (keyCode === UP_ARROW) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex - 1, slidyWindow.knobOffset);
     } else if (keyCode === LEFT_ARROW) {
-        slidyWindow.moveWord(slidyWindow.selectedTrack, -10);
+        slidyWindow.moveWord(slidyWindow.selectedTrack, -shiftAmount);
     } else if (keyCode === RIGHT_ARROW) {
-        slidyWindow.moveWord(slidyWindow.selectedTrack, 10);
+        slidyWindow.moveWord(slidyWindow.selectedTrack, shiftAmount);
     } else if (keyCode === 8) { // delete
         slidyWindow.resetNote(slidyWindow.selectedTrack);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
+    } 
+    else if (keyCode === 32) { // spacebar
+        // want to pause?   
     }
-    else if (keyCode === 112) { // F1
-        reset();
-    } // if it's an 'l' key, toggle looping
-    
-    // if it is a 'K' key, toggle the virtual keyboard
-    // else if (keyCode === 75) {
-    //     virtualMidiKeyboard = !virtualMidiKeyboard;
-    // }
-    // else {
-    //     console.log(keyCode)
-    //     if (virtualMidiKeyboard) {
-    //         handleMIDIMessage({
-    //             data: [
-    //                 144,
-    //                 keyCode,
-    //                 100
-    //             ]
-    //         });
-    //         return false; // suppress default
-    //     }
-    // } 
 }
 
 function playSynth() {
@@ -524,5 +612,17 @@ function draw() {
 }
 
 function mousePressed() {
-    
+    //get the track that was clicked on
+    let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
+    let track = slidyWindow.tracks[trackIndex];
+
+    // change the type of this to be the other type
+    let nextTrackType = getNextTrackType(track.constructor);
+    let newTrack =  new nextTrackType(track.i, track.trackHeight);
+    newTrack.text = track.text;
+    newTrack.xLoc = track.xLoc;
+    newTrack.speed = track.speed;
+    newTrack.looping = track.looping;
+    newTrack.selected = track.selected;
+    slidyWindow.tracks[track.i] = newTrack;
 }

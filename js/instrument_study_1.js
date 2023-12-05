@@ -1,3 +1,9 @@
+// const qwerty = "qwertyuiopasdfghjklzxcvbnm"
+const qwerty = "qwertyuiop[]asdfghjkl;'zxcvbnm,./"
+function qwertyIndex(c) {
+    return qwerty.indexOf(c);
+}
+
 let base_url = 'http://127.0.0.1:5000';
 
 let library = {
@@ -15,16 +21,27 @@ for (let i = 1; i <= 3; i++) {
     corpusTextArea.value = Object.values(library)[i - 1].toUpperCase();
 }
 
-let grammar = library["cutup"].split(" ");
+// let grammar = library["cutup"].split(" ");
+
+function parseText(text) {
+    let doc = nlp(text)
+    let sentences = doc.json();
+    let words = sentences.map(sentence => sentence.terms.map(term => term.text))
+    console.log("words", words.flat())
+    return words.flat();
+}
+
+let grammar = parseText(library["cutup"]);
+
 
 // USER SETTINGS
 const virtualMidiKeyboard = true;
-const userSpecifiedHeight = 600;
-const userSpecifiedNumTracks = 20;
+let userSpecifiedHeight = 600;
+let userSpecifiedNumTracks = 30;
 const baseSpeed = 3;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
-const visualDebug = true;
+const visualDebug = false;
 
 let maxTracksNum;
 let start;
@@ -110,7 +127,7 @@ class Corpus {
       updateCorpus(n) {
         // get the value of corpus<n> from the html
         let corpusValue = document.getElementById("corpus" + n).value;
-        grammar = corpusValue.split(" ");
+        grammar = parseText(corpusValue);
       }
 }
 let corpus = new Corpus();
@@ -180,7 +197,8 @@ class SlidyWindow {
     initTrack(i) {
         let track = i % 2 == 0 ? 
               new IndexTrack(this.tracks.length, this.trackHeight)
-            : new CreativeTrack(this.tracks.length, this.trackHeight);
+              : new IndexTrack(this.tracks.length, this.trackHeight)
+            // : new CreativeTrack(this.tracks.length, this.trackHeight);
         this.tracks.push(track);
     }
 
@@ -383,8 +401,11 @@ function getNextTrackType(trackType) {
 
 function setup() {
     noStroke();
+    userSpecifiedHeight = windowHeight * 0.7;
     var canvas = createCanvas(windowWidth, userSpecifiedHeight);
     canvas.parent('canvas-container'); // Attach the canvas to the container
+
+    // userSpecifiedHeight = document.getElementById('canvas-container').offsetHeight;
 
     rectMode(CORNERS);
     textAlign(LEFT, TOP);
@@ -398,7 +419,7 @@ function setup() {
     }
 
     color = [random(255), random(255), random(255)];
-    monoSynth = new p5.MonoSynth();
+    // monoSynth = new p5.MonoSynth();
 
     startX = width;
     start = createVector(0, 0)
@@ -498,14 +519,14 @@ function handleMIDIMessage(message) {
         fill(color[0], color[1], color[2]);
         updateColor();
 
-        playSynth();
+        // playSynth();
 
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
 
     }
     else if (eventType === 8) { // Note off message
-        offSynth();
+        // offSynth();
     }
     else if (eventType === 11) { // Control change message
         if (note === 1) { // Modulation wheel
@@ -552,19 +573,26 @@ function s(start, end, newStart, newEnd, val) {
 }
 
 function keyTyped() {
-    if (key === 'l') {
+    let index = qwertyIndex(key);
+    // console.log("key", key, "index", index, "keyCode", keyCode);
+
+    if (key === '1') {
         slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
-    } else {
-        if (virtualMidiKeyboard) {
-            handleMIDIMessage({
-                data: [
-                    144,
-                    keyCode,
-                    100
-                ]
-            });
-            return false; // suppress default
-        }
+    } 
+
+    if (index == -1) {
+        return;
+    }
+
+    if (virtualMidiKeyboard) {
+        handleMIDIMessage({
+            data: [
+                144,
+                index,
+                100
+            ]
+        });
+        return false; // suppress default
     }
   }
 
@@ -587,13 +615,13 @@ function keyPressed() {
     }
 }
 
-function playSynth() {
-  monoSynth.triggerAttack(note, velocity);
-}
+// function playSynth() {
+//   monoSynth.triggerAttack(note, velocity);
+// }
 
-function offSynth() {
-    monoSynth.triggerRelease();
-}
+// function offSynth() {
+//     monoSynth.triggerRelease();
+// }
 
 
 function preload() {
@@ -612,17 +640,20 @@ function draw() {
 }
 
 function mousePressed() {
-    //get the track that was clicked on
-    let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
-    let track = slidyWindow.tracks[trackIndex];
+    if (slidyWindow) {
+        //get the track that was clicked on
+        let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
+        let track = slidyWindow.tracks[trackIndex];
+    
+        // change the type of this to be the other type
+        let nextTrackType = getNextTrackType(track.constructor);
+        let newTrack =  new nextTrackType(track.i, track.trackHeight);
+        newTrack.text = track.text;
+        newTrack.xLoc = track.xLoc;
+        newTrack.speed = track.speed;
+        newTrack.looping = track.looping;
+        newTrack.selected = track.selected;
+        slidyWindow.tracks[track.i] = newTrack;
 
-    // change the type of this to be the other type
-    let nextTrackType = getNextTrackType(track.constructor);
-    let newTrack =  new nextTrackType(track.i, track.trackHeight);
-    newTrack.text = track.text;
-    newTrack.xLoc = track.xLoc;
-    newTrack.speed = track.speed;
-    newTrack.looping = track.looping;
-    newTrack.selected = track.selected;
-    slidyWindow.tracks[track.i] = newTrack;
+    }
 }

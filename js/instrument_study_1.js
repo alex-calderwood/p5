@@ -237,6 +237,7 @@ class Track {
     constructor(i, height) {
         this.i = i;
         this.trackHeight = height;
+        this.trackWidth = width;
         this.looping = false;
         this.selected = false;
 
@@ -244,7 +245,8 @@ class Track {
         this.xLoc = startX;
         this.speed = baseSpeed;
 
-        this.bounds = [0, this.i * this.trackHeight, width, this.i * this.trackHeight + this.trackHeight];
+        // [x1, y1, x2, y2]
+        this.bounds = [0, this.i * this.trackHeight, this.trackWidth, this.i * this.trackHeight + this.trackHeight];
 
         this.mainColor = 255;
         this.secondaryColor = 0;
@@ -304,14 +306,27 @@ class Track {
         
         // Draw the selected track indicator
         if (this.selected) {
-            // stroke(255);
+
 
             let strokeColor = this.mainColor;
             stroke(strokeColor, strokeColor, strokeColor);
 
-            strokeWeight(2);
-            noFill();
-            rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
+            // hatching
+            strokeWeight(1);            
+            let spacing = 6; // Distance between lines
+            // Draw first set of diagonal lines
+            for (let x = -this.trackWidth; x < this.trackWidth + this.trackHeight; x += spacing) {
+                line(x, this.bounds[1], x + this.trackHeight, this.bounds[3]);
+            }
+
+            // Draw second set of diagonal lines in the opposite direction
+            for (let x = this.trackWidth + this.trackHeight; x > -this.trackWidth; x -= spacing) {
+                line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
+            }
+
+            // strokeWeight(2);
+            // noFill();
+            // rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
             
             noStroke();
             noFill()
@@ -578,7 +593,9 @@ function keyTyped() {
 
     if (key === '1') {
         slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
-    } 
+    } else if (key === '2') {
+        changeTrackType(slidyWindow.selectedTrack);
+    }
 
     if (index == -1) {
         return;
@@ -654,6 +671,17 @@ function mousePressed() {
         newTrack.looping = track.looping;
         newTrack.selected = track.selected;
         slidyWindow.tracks[track.i] = newTrack;
-
     }
+}
+
+function changeTrackType(trackIndex) {
+    let track = slidyWindow.tracks[trackIndex];
+    let nextTrackType = getNextTrackType(track.constructor);
+    let newTrack =  new nextTrackType(track.i, track.trackHeight);
+    newTrack.text = track.text;
+    newTrack.xLoc = track.xLoc;
+    newTrack.speed = track.speed;
+    newTrack.looping = track.looping;
+    newTrack.selected = track.selected;
+    slidyWindow.tracks[track.i] = newTrack;
 }

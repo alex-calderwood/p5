@@ -103,12 +103,12 @@ class Realization {
 
     draw() {
         fill(0);
-        rect(0, height - 32, width, height)
+        rect(0, height - textS * 2, width, height) // rectMode is corners
         fill(240);
         textAlign(CENTER, BOTTOM);
         let charsToDisplay = Math.floor(width / textWidth("A"));
         let displayText = this.realization.slice(this.realization.length - charsToDisplay, this.realization.length).join(" ");
-        text(displayText, width / 2, height - 16);
+        text(displayText, width / 2, height);
         textAlign(LEFT, TOP);
     }
 
@@ -668,7 +668,7 @@ function mousePressed() {
         newTrack.text = track.text;
         newTrack.xLoc = track.xLoc;
         newTrack.speed = track.speed;
-        newTrack.looping = track.looping;
+        newTrack.setLooping(track.looping);
         newTrack.selected = track.selected;
         slidyWindow.tracks[track.i] = newTrack;
     }
@@ -681,7 +681,7 @@ function changeTrackType(trackIndex) {
     newTrack.text = track.text;
     newTrack.xLoc = track.xLoc;
     newTrack.speed = track.speed;
-    newTrack.looping = track.looping;
+    newTrack.setLooping(track.looping);
     newTrack.selected = track.selected;
     slidyWindow.tracks[track.i] = newTrack;
 }

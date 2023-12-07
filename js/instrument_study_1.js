@@ -33,15 +33,21 @@ function parseText(text) {
 
 let grammar = parseText(library["cutup"]);
 
-
 // USER SETTINGS
 const virtualMidiKeyboard = true;
-let userSpecifiedHeight = 600;
-let userSpecifiedNumTracks = 30;
-const baseSpeed = 3;
+let userSpecifiedHeight = 250;
+let userSpecifiedNumTracks = 7;
+const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
 const visualDebug = false;
+let maxTextWidth = 40; // pixels
+
+const keyboardMode = 'ableton';
+let knobRange;
+if (keyboardMode === 'ableton') {
+    knobRange = [1, 8];
+}
 
 let maxTracksNum;
 let start;
@@ -60,12 +66,15 @@ let range = [0, 120];
 let slidyWindow;
 let knobs;
 
+
 let grammarIndex = 0;
 
 let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
 
 let selectedSample = 0;
 
+let uiScaleState = 1;
+let uiScaleStateTracker = 1;
 
 function getCreative(leftwords, rightwords, badwords) {
     return fetch(base_url + '/bert', {
@@ -91,24 +100,29 @@ function getCreative(leftwords, rightwords, badwords) {
 class Realization {
     constructor() {
         this.realization = [];
+        this.currentLine = [];
+    }
+    
+    newLine() {
+        this.realization.push(this.currentLine);
     }
 
-    add(text) {
-        if (text !== "") {
-            this.realization.push(text);
-        }
+    update() {
+        // tell the realization that the current line has changed
+        this.currentLine = slidyWindow.tracks.map(track => track.text);
         let realizationTextArea = document.getElementsByClassName('realization')[0];
-        realizationTextArea.value = this.realization.join(" ");
+        realizationTextArea.value = this.realization.map(line => line.join(" ")).join("\n");
     }
 
     draw() {
-        fill(0);
-        rect(0, height - textS * 2, width, height) // rectMode is corners
-        fill(240);
-        textAlign(CENTER, BOTTOM);
         let charsToDisplay = Math.floor(width / textWidth("A"));
-        let displayText = this.realization.slice(this.realization.length - charsToDisplay, this.realization.length).join(" ");
-        text(displayText, width / 2, height);
+        let displayText = this.currentLine.slice(this.currentLine.length - charsToDisplay, this.currentLine.length).join(" ");
+        
+        fill(0);
+        rect(0, height - textS * 2.5, width, height) // rectMode is corners
+        fill(240);
+        textAlign(CENTER, TOP);
+        text(displayText, width / 2, height - textS * 2.5);
         textAlign(LEFT, TOP);
     }
 
@@ -188,7 +202,7 @@ class SlidyWindow {
         // TODO: reset all tracks
         for (let i = 0; i < this.numTracks; i++) {
             this.tracks[i].text = '';
-            this.tracks[i].xLoc = startX;
+            this.tracks[i].position = startX;
             this.tracks[i].speed = baseSpeed;
         }
         this.updateSelectedTrack(0, this.knobOffset);
@@ -207,7 +221,49 @@ class SlidyWindow {
     }
 
     moveWord(track, offset) {
-        this.tracks[track].xLoc += offset;
+        // manually update the location of a word
+        this.tracks[track].position += offset;
+
+        // this.sortTracks();
+    }
+
+    sortTracks() {
+        let baseline = this.tracks[0].position;
+        let modWidth = this.loc[2]
+
+        let xs = this.tracks.map(track => [track.i, track.position]);
+        // sort the tracks by their position
+        console.log("original", xs);
+        xs = xs.sort((a, b) => {
+            let aLoc = a[1];
+            let bLoc = b[1];
+            if (aLoc < baseline) {
+                aLoc += modWidth;
+            }
+            if (bLoc < baseline) {
+                bLoc += modWidth;
+            }
+            return aLoc - bLoc;
+        });
+        console.log("sorted", xs);
+
+        // update the tracks to be in the correct order
+        let newTracks = [];
+        for (let i = 0; i < xs.length; i++) {
+            let track = this.tracks[xs[i][0]];
+            track.i = i;
+            newTracks.push(track);
+        }
+
+        this.tracks = newTracks;
+
+        this.selectedTrack = 0;
+
+        // for (let i = 0; i < newTracks.length; i++) {
+        //     newTracks[i].i = i;
+        // }
+        // this.tracks = newTracks;
+        // this.selectedTrack = 0;
     }
 
     draw() {
@@ -216,6 +272,8 @@ class SlidyWindow {
         rect(this.loc[0], this.loc[1], this.loc[2], this.loc[3]);
 
         textSize(slidyWindow.trackHeight);
+
+        // draw the tracks
         for (let i = 0; i < this.tracks.length; i++) {
             this.tracks[i].draw();
         }
@@ -224,7 +282,7 @@ class SlidyWindow {
     updateSelectedTrack(baseIndex, knobOffset) {
         this.selectedTrackBaseIndex = baseIndex;
         this.knobOffset = knobOffset;
-        this.selectedTrack = this.selectedTrack < 0 ? maxTracksNum + this.selectedTrack : this.selectedTrack;
+        this.selectedTrack = this.selectedTrack < 0 ? maxTracksNum : this.selectedTrack;
         this.selectedTrack = (this.selectedTrackBaseIndex + this.knobOffset) % maxTracksNum;
 
         for (let i = 0; i < this.tracks.length; i++) {
@@ -242,7 +300,7 @@ class Track {
         this.selected = false;
 
         this.text = '';
-        this.xLoc = startX;
+        this.position = startX;
         this.speed = baseSpeed;
 
         // [x1, y1, x2, y2]
@@ -264,20 +322,24 @@ class Track {
         }
 
         this.text    = grammar[note % grammar.length];
-        realization.add(this.text);
+        realization.update();
 
         this.setLooping(true);
     }
 
     hardResetNote() {
         this.text = '';
-        this.xLoc = startX;
+        this.position = startX;
         this.speed = baseSpeed;
     }
 
     softResetNote() {
-        this.xLoc = startX + textWidth(this.text);
+        this.position = startX;
         this.speed = baseSpeed;
+
+        if (this.i == 0) {
+            realization.newLine();
+        }
     }
 
     draw() {
@@ -287,16 +349,16 @@ class Track {
         let lineText = this.text.toUpperCase();
         if (visualDebug) {
             fill(255, 0, 0)
-            rect(this.xLoc, this.i * this.trackHeight, this.xLoc + 4, this.i * this.trackHeight + this.trackHeight);
+            rect(this.position, this.i * this.trackHeight, this.position + 4, this.i * this.trackHeight + this.trackHeight);
         }
         fill(this.mainColor);
-        text(lineText, this.xLoc, this.i * this.trackHeight);
-        this.xLoc -= this.speed;
+        text(lineText, this.position, this.i * this.trackHeight);
+        this.position -= this.speed;
 
-        if (this.xLoc < -textWidth(this.text)) {
+        if (this.position < -maxTextWidth) {
             if (this.looping) {
                 // reset to the right side of the screen
-                realization.add(this.text);
+                realization.update();
                 this.softResetNote();
             } else {
                 // reset to the right side of the screen, and clear the text
@@ -312,18 +374,20 @@ class Track {
             stroke(strokeColor, strokeColor, strokeColor);
 
             // hatching
-            strokeWeight(1);            
-            let spacing = 6; // Distance between lines
+            strokeWeight(2);            
+            let spacing = 9; // Distance between lines
             // Draw first set of diagonal lines
-            for (let x = -this.trackWidth; x < this.trackWidth + this.trackHeight; x += spacing) {
-                line(x, this.bounds[1], x + this.trackHeight, this.bounds[3]);
+            // if (this.i % 2 == 0) {
+                for (let x = -this.trackWidth; x < this.trackWidth + this.trackHeight; x += spacing) {
+                    line(x, this.bounds[1], x + this.trackHeight, this.bounds[3]);
             }
-
-            // Draw second set of diagonal lines in the opposite direction
-            for (let x = this.trackWidth + this.trackHeight; x > -this.trackWidth; x -= spacing) {
-                line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
-            }
-
+            // } else {
+                // Draw second set of diagonal lines in the opposite direction
+                for (let x = this.trackWidth + this.trackHeight; x > -this.trackWidth; x -= spacing) {
+                    line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
+                }
+            // }
+            
             // strokeWeight(2);
             // noFill();
             // rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
@@ -354,7 +418,6 @@ class IndexTrack extends Track {
     draw() {
         super.draw();
     }
-
 
     static doDrawTrackIndicator(color, bounds) {
         // Do nothing
@@ -396,15 +459,21 @@ class CreativeTrack extends Track {
         getCreative(leftwords, rightwords, this.history).then(word => {
             console.log(leftwords, rightwords, "returns", word)
             this.text = word
-            realization.add(this.text.toUpperCase());
+            realization.update();
             this.history.push(word);
         })
     }
 
     static doDrawTrackIndicator(color, bounds) {
         fill(color);
-        let h = bounds[3] - bounds[1];
-        rect(bounds[0] + h/4 , bounds[1] + h/4, bounds[0] + h * 3/4, bounds[1] + h * 3/4);
+        let h = (bounds[3] - bounds[1]);
+
+        rect(
+            bounds[0] + h/4 * uiScaleState, 
+            bounds[1] + h/4 * uiScaleState, 
+            bounds[0] + h * (1 - (1/4 * uiScaleState)),            
+            bounds[1] + h * (1 - (1/4 * uiScaleState)),
+        );
     }
 }
 
@@ -416,7 +485,9 @@ function getNextTrackType(trackType) {
 
 function setup() {
     noStroke();
-    userSpecifiedHeight = windowHeight * 0.7;
+    userSpecifiedHeight = windowHeight * 0.3;
+    maxTextWidth = textWidth("APRETTYLONGWORD");
+
     var canvas = createCanvas(windowWidth, userSpecifiedHeight);
     canvas.parent('canvas-container'); // Attach the canvas to the container
 
@@ -484,6 +555,7 @@ function handleMIDIMessage(message) {
     const channelNumber = (message.data[0] & 0x0F) + 1; // channelNumber is 1 indexed in Ableton, so we are copying that here
     const eventType = message.data[0] >> 4;
 
+
     command = message.data[0]; // https://computermusicresource.com/MIDI.Commands.html
     note = message.data[1] ? message.data[1] : 0;
     velocity = (message.data.length > 2) ? message.data[2] : 0;
@@ -544,25 +616,22 @@ function handleMIDIMessage(message) {
         // offSynth();
     }
     else if (eventType === 11) { // Control change message
-        if (note === 1) { // Modulation wheel
-        }
-        else if (note === 7) { // Volume
-        }
-        else if (note === 10) { // Pan
+        if (note === 10) { // Pan
         }
         else if (note === 11) { // Expression
         }
         else if (note === 64) { // Sustain
         }
-        else if (70 <= note && note <= 79) { // General Purpose Controllers
-            knobs.set(note - 70, velocity); // update the knobs visual
-            if (note === 70) {
+        else if (knobRange[0] <= note && note <= knobRange[1]) { // General Purpose Controllers
+            let knobIndex = note - knobRange[0];
+            knobs.set(knobIndex, velocity); // update the knobs visual
+            if (knobIndex === 0) {
                 setSpeeds((1 - (velocity / 127)) * maxSpeed);
             }
-            else if (note === 74) {
+            else if (knobIndex === 4) {
                 slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex, velocity);
             }
-            else if (note === 71) {
+            else if (knobIndex === 1) {
                 setSpeed(slidyWindow.selectedTrack, (1 - (velocity / 127)) * maxSpeed);
             }
         }
@@ -589,11 +658,11 @@ function s(start, end, newStart, newEnd, val) {
 
 function keyTyped() {
     let index = qwertyIndex(key);
-    // console.log("key", key, "index", index, "keyCode", keyCode);
+    console.log("key", key, "index", index, "keyCode", keyCode);
 
     if (key === '1') {
         slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
-    } else if (key === '2') {
+    } else if (key === '2' || keyCode === 32) { // Spacebar or '2'
         changeTrackType(slidyWindow.selectedTrack);
     }
 
@@ -654,24 +723,40 @@ function draw() {
     // main draw call
     slidyWindow.draw();
     realization.draw();
+
+    uiScaleStateTracker = uiScaleStateTracker + 0.02;
+    // if (uiScaleStateTracker > 1) {
+    //     uiScaleStateTracker = 0;
+    // }
+    // easing
+    // linear
+    // uiScaleState = uiScaleStateTracker;
+    // quadratic
+    // uiScaleState = uiScaleStateTracker * uiScaleStateTracker;
+    // fancy
+    // uiScaleState = 1 - Math.pow(1 - uiScaleStateTracker, 2);
+    // fancy 2
+    // uiScaleState = Math.sin(uiScaleStateTracker * Math.PI / 2);
+    // fancy 3
+    uiScaleState = Math.pow(Math.sin(uiScaleStateTracker * Math.PI / 2), 2);
 }
 
 function mousePressed() {
-    if (slidyWindow) {
-        //get the track that was clicked on
-        let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
-        let track = slidyWindow.tracks[trackIndex];
+    // if (slidyWindow) {
+    //     //get the track that was clicked on
+    //     let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
+    //     let track = slidyWindow.tracks[trackIndex];
     
-        // change the type of this to be the other type
-        let nextTrackType = getNextTrackType(track.constructor);
-        let newTrack =  new nextTrackType(track.i, track.trackHeight);
-        newTrack.text = track.text;
-        newTrack.xLoc = track.xLoc;
-        newTrack.speed = track.speed;
-        newTrack.setLooping(track.looping);
-        newTrack.selected = track.selected;
-        slidyWindow.tracks[track.i] = newTrack;
-    }
+    //     // change the type of this to be the other type
+    //     let nextTrackType = getNextTrackType(track.constructor);
+    //     let newTrack =  new nextTrackType(track.i, track.trackHeight);
+    //     newTrack.text = track.text;
+    //     newTrack.position = track.position;
+    //     newTrack.speed = track.speed;
+    //     newTrack.setLooping(track.looping);
+    //     newTrack.selected = track.selected;
+    //     slidyWindow.tracks[track.i] = newTrack;
+    // }
 }
 
 function changeTrackType(trackIndex) {
@@ -679,7 +764,7 @@ function changeTrackType(trackIndex) {
     let nextTrackType = getNextTrackType(track.constructor);
     let newTrack =  new nextTrackType(track.i, track.trackHeight);
     newTrack.text = track.text;
-    newTrack.xLoc = track.xLoc;
+    newTrack.position = track.position;
     newTrack.speed = track.speed;
     newTrack.setLooping(track.looping);
     newTrack.selected = track.selected;

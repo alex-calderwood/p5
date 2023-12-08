@@ -40,7 +40,6 @@ function parseText(text) {
 function taggedText(text, tag) {
     let doc = nlp(text);
     let match = doc.match(tag).out('array');
-    console.log(match);
     return match;
 }
 
@@ -61,7 +60,7 @@ setGlobalGrammars(library["cutup"]);
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 let userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 10;
+let userSpecifiedNumTracks = 8;
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
@@ -157,8 +156,12 @@ class Realization {
     update() {
         // tell the realization that the current line has changed
         this.currentLine = slidyWindow.tracks.map(track => track.text);
+        
+        // update the realization textarea        
         let realizationTextArea = document.getElementsByClassName('realization')[0];
-        realizationTextArea.value = this.realization.map(line => line.join(" ")).join("\n");
+        if (this.realization.length > 0) {
+            realizationTextArea.value = this.realization.map(line => line.join(" ")).join("\n");
+        }
     }
 
     draw() {
@@ -275,8 +278,6 @@ class Multitrack {
         this.tracks.push(track);
     }
 
-    resetNote(track) { }
-
     moveWord(track, offset) {
         // manually update the location of a word
         this.tracks[track].position += offset;
@@ -354,7 +355,7 @@ class Track {
         this.i = i;
         this.trackHeight = height;
         this.trackWidth = width;
-        this.looping = false;
+        this.isAdvanced = true;
         this.selected = false;
 
         this.text = '';
@@ -369,8 +370,8 @@ class Track {
         this.secondaryColor = 0;
     }
 
-    setLooping(newValue) {
-        this.looping = newValue;
+    setIsAdvanced(newValue) {
+        this.isAdvanced = newValue;
         this.mainColor = newValue ? 0 : 255;
         this.secondaryColor = newValue ? 255 : 0;
     }
@@ -385,7 +386,7 @@ class Track {
         this.text    = grammar[note % grammar.length];
         realization.update();
 
-        this.setLooping(true);
+        // this.setIsAdvanced(true);
     }
 
     doBasicResetNote() {
@@ -425,7 +426,7 @@ class Track {
         }
 
         if (this.position < -maxTextWidth) {
-            if (this.looping) {
+            if (this.isAdvanced) {
                 // reset to the right side of the screen
                 realization.update();
                 this.advancedResetNote();
@@ -465,11 +466,12 @@ class Track {
         this.position -= this.speed;
 
         if (mouseX > this.bounds[0] && mouseX < this.bounds[2] && mouseY > this.bounds[1] && mouseY < this.bounds[3]) {
-            let nextTrackType = getNextTrackType(this.constructor);
-            nextTrackType.doDrawTrackIndicator(this.mainColor, this.bounds);
+            this.constructor.doDrawTrackIndicator(this.mainColor, this.bounds);
         } else {
             this.constructor.doDrawTrackIndicator(this.mainColor, this.bounds);
         }
+        this.constructor.doDrawTrackIndicator(this.mainColor, this.bounds);
+
     }
 
     static doDrawTrackIndicator(color, bounds) {
@@ -510,7 +512,7 @@ class POSTrack extends Track {
         }
 
         realization.update();
-        this.setLooping(true);
+        // this.setIsAdvanced(true);
     }
 
     basicResetNote() {
@@ -553,7 +555,6 @@ class NounTrack extends POSTrack {
     }
 
     static doDrawTrackIndicator(color, bounds) {
-        console.log("in noun")
         POSTrack.doDrawTrackIndicator(color, bounds, NounTrack.pos);
     }
 }
@@ -645,7 +646,7 @@ function getNextTrackType(trackType) {
 
 function setup() {
     noStroke();
-    userSpecifiedHeight = windowHeight * 0.3;
+    userSpecifiedHeight = windowHeight * 0.7;
     maxTextWidth = textWidth("APRETTYLONGWORD");
 
     var canvas = createCanvas(windowWidth, userSpecifiedHeight);
@@ -820,7 +821,7 @@ function keyTyped() {
     // console.log("key", key, "index", index, "keyCode", keyCode);
 
     if (key === '1') {
-        slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
+        slidyWindow.tracks[slidyWindow.selectedTrack].setIsAdvanced(!slidyWindow.tracks[slidyWindow.selectedTrack].isAdvanced);
     } else if (key === '2' || keyCode === 32) { // Spacebar or '2'
         changeTrackType(slidyWindow.selectedTrack);
     } else if (false) {
@@ -855,7 +856,7 @@ function keyPressed() {
     } else if (keyCode === RIGHT_ARROW) {
         slidyWindow.moveWord(slidyWindow.selectedTrack, shiftAmount);
     } else if (keyCode === 8) { // delete
-        slidyWindow.resetNote(slidyWindow.selectedTrack);
+        slidyWindow.tracks[slidyWindow.selectedTrack].hardResetNote();
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     } 
     else if (keyCode === 32) { // spacebar
@@ -904,21 +905,28 @@ function draw() {
 }
 
 function mousePressed() {
-    // if (slidyWindow) {
-    //     //get the track that was clicked on
-    //     let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
-    //     let track = slidyWindow.tracks[trackIndex];
-    
-    //     // change the type of this to be the other type
-    //     let nextTrackType = getNextTrackType(track.constructor);
-    //     let newTrack =  new nextTrackType(track.i, track.trackHeight);
-    //     newTrack.text = track.text;
-    //     newTrack.position = track.position;
-    //     newTrack.speed = track.speed;
-    //     newTrack.setLooping(track.looping);
-    //     newTrack.selected = track.selected;
-    //     slidyWindow.tracks[track.i] = newTrack;
-    // }
+    if (slidyWindow) {
+        //get the track that was clicked on
+        let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
+        let track = slidyWindow.tracks[trackIndex];
+
+        if (track) {
+            // if the shift button is being held
+            if (keyIsDown(SHIFT)) {
+                track.setIsAdvanced(!track.isAdvanced);
+            } else {
+                // change the type of this to be the other type
+                let nextTrackType = getNextTrackType(track.constructor);
+                let newTrack =  new nextTrackType(track.i, track.trackHeight);
+                newTrack.text = track.text;
+                newTrack.position = track.position;
+                newTrack.speed = track.speed;
+                newTrack.setIsAdvanced(track.isAdvanced);
+                newTrack.selected = track.selected;
+                slidyWindow.tracks[track.i] = newTrack;
+            }
+        }
+    }
 }
 
 function changeTrackType(trackIndex) {
@@ -928,7 +936,7 @@ function changeTrackType(trackIndex) {
     newTrack.text = track.text;
     newTrack.position = track.position;
     newTrack.speed = track.speed;
-    newTrack.setLooping(track.looping);
+    newTrack.setIsAdvanced(track.isAdvanced);
     newTrack.selected = track.selected;
     slidyWindow.tracks[track.i] = newTrack;
 }

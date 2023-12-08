@@ -2,11 +2,13 @@ let base_url = 'http://127.0.0.1:5000';
 
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
-    "genres": "comedy tragedy history romance tragicomedy fantasy musical melodrama",
+    "pataphysics": "pataphysics is the science of the realm beyond metaphysics… It will study the laws which govern exceptions and will explain the universe supplementary to this one; or, less ambitiously, it will describe a universe which one can see — must see perhaps — instead of the traditional one… Definition: pataphysics is the science of imaginary solutions, which symbolically attributes the properties of objects, described by their virtuality, to their lineaments (Jarry 1963: 131).",
     // https://dbanach.com/enneads/enneads-study2.htm
+    "deconstruction": "Certainly, Derrida’s style is not traditional. In the same speech from 1980 at the time of him being awarded a doctorate, Derrida tells us that, in the Seventies, he devoted himself to developing a style of writing. The most clearest example is his 1974 Glas (“Death Knell” would be an approximate English translation; the current English translation simply uses the word “glas”); here Derrida writes in two columns, with the left devoted to a reading of Hegel and the right devoted to a reading of the French novelist-playwright Jean Genet. Another example would be his 1980 Postcard from Socrates to Freud and Beyond; the opening two hundred pages of this book consist of love letters addressed to no one in particular. It seems that sometime around this time (1980), Derrida reverted back to the more linear and somewhat argumentative style, the very style that defined his texts from the Sixties. He never however renounced a kind of evocation, a calling forth that truly defines deconstruction. Derrida takes the idea of a call from Heidegger. Starting in 1968 with “The Ends of Man,” Derrida devoted a number of texts to Heidegger’s thought. But, it is really with the 1978 publication of The Truth in Painting, and then throughout the 1980s, that Derrida intensified his reading of Heidegger. In particular, he wrote a series of essays on the question of sex or race in Heidegger (“Geschlecht I–IV”). While frequently critical, these essays often provide new insights into Heidegger’s thought. The culminating essay in Derrida’s series on Heidegger is his 1992 Aporias.",
+    "genres": "comedy tragedy history romance tragicomedy fantasy musical melodrama",
     "enneads": "To live at ease is There and to these divine beings verity is mother and nurse existence and sustenance all that is not of process but of authentic being they see and themselves in all for all is transparent nothing dark nothing resistant every being is lucid to every other in breadth and depth light runs through light. And each of them contains all within itself, and at the same time sees all in every other, so that everywhere there is all, and all is all and each all, and infinite the glory. Each of them is great; the small is great; the sun, There, is all the stars; and every star, again, is all the stars and sun. While some one manner of being is dominant in each, all are mirrored in every other.  Movement There is pure [as self-caused] for the moving principle is not a separate thing to complicate it as it speeds.  So, too, Repose is not troubled, for there is no admixture of the unstable; and the Beauty is all beauty since it is not merely resident [as an attribute or addition] in some beautiful object. Each There walks upon no alien soil; its place is its essential self; and, as each moves, so to speak, towards what is Above, it is attended by the very ground from which it starts: there is no distinguishing between the Being and the Place; all is Intellect, the Principle and",
+    "funny": "This trick has to do with the words you choose. Some words are inherently funnier than others according to humor experts (there’s always an expert). Words that contain the consonants p, b, d, g, t or k (known as plosives for anyone who cares) are funnier. Some examples of funnier words: brouhaha, pandemonium, or hullabaloo instead of chaos scamper, bustle, or skedaddle instead of hurry hoodwink, dupe, or bamboozle instead of mislead Make friends with your Thesaurus to find funnier sounding synonyms. Another way to add humor through word choice is to use specific words. When writing, it’s easy to opt for weak words. And that’s okay when you’re in draft mode. But when you edit your writing, try to replace those unimaginative nouns with more specific ones. For example if you’re writing about the last experience at your auto repair shop. Describe your car. What type of repair did it need? Discovering your 2003 Ford Focus had loose lug nuts seems funnier than taking your car in for a rattle. (Almost true experience. I don’t drive a Ford Focus, but my car did suffer loose lug nuts.)",
     "wake": "riverrun, past Eve and Adam’s, from swerve of shore to bend of bay, brings us by a commodius vicus of recirculation back to Howth Castle and Environs. Sir Tristram, violer d’amores, fr’over the short sea, had passencore rearrived from North Armorica on this side the scraggy isthmus of Europe Minor to wielderfight his penisolate war: nor had topsawyer’s rocks by the stream Oconee exaggerated themselse to Laurens County’s gorgios while they went doublin their mumper all the time: nor avoice from afire bellowsed mishe mishe to tauftauf thuartpeatrick not yet, though venissoon after, had a kidscad buttended a bland old isaac: not yet, though all’s fair in vanessy, were sosie sesthers wroth with twone nathandjoe. Rot a peck of pa’s malt had Jhem or Shen br",
-    "something": "",
 }
 
 // const qwerty = "qwertyuiopasdfghjklzxcvbnm"      // first version
@@ -19,23 +21,47 @@ function qwertyIndex(c) {
 // and setting their values to the keys of the library
 for (let i = 1; i <= 3; i++) {
     let corpusTextArea = document.getElementById("corpus" + i);
-    corpusTextArea.value = Object.values(library)[i - 1].toUpperCase();
+    if (i == 1) {
+        corpusTextArea.value = Object.values(library)[0].toUpperCase();
+    }
+    else {
+        let randomIndex = Math.floor(Math.random() * Object.keys(library).length) + 1;
+        corpusTextArea.value = Object.values(library)[randomIndex].toUpperCase();
+    }
 }
 
 function parseText(text) {
-    let doc = nlp(text)
+    let doc = nlp(text);
     let sentences = doc.json();
     let words = sentences.map(sentence => sentence.terms.map(term => term.text)).flat()
     return words;
 }
 
-// let grammar = library["cutup"].split(" ");
-let grammar = parseText(library["cutup"]);
+function taggedText(text, tag) {
+    let doc = nlp(text);
+    let match = doc.match(tag).out('array');
+    console.log(match);
+    return match;
+}
+
+let grammar;
+let nouns;
+let adjectives; 
+let verbs;
+
+function setGlobalGrammars(text) {
+    grammar     = parseText(text);
+    nouns       = taggedText(text, '#Noun');
+    adjectives  = taggedText(text, '#Adjective');
+    verbs       = taggedText(text, '#Verb');
+}
+
+setGlobalGrammars(library["cutup"]);
 
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 let userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 7;
+let userSpecifiedNumTracks = 10;
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
@@ -100,9 +126,32 @@ class Realization {
         this.realization = [];
         this.currentLine = [];
     }
+
+    static realizationToRender(wordArray) {
+        // if there is a word that starts with ##, concatenate it with the previous word
+        let lineCopy = wordArray.slice();
+        for (let i = 0; i < lineCopy.length; i++) {
+            if (lineCopy[i].startsWith("##")) {
+                lineCopy[i - 1] += lineCopy[i].slice(2);
+                lineCopy.splice(i, 1);
+            }
+        }
+        return lineCopy;
+    }
     
     newLine() {
-        this.realization.push(this.currentLine);
+        /*
+         * push the current line to the realization
+         * avoiding duplicates
+         */
+
+        let lineToPush = Realization.realizationToRender(this.currentLine);
+
+        if (this.realization.length > 0 && this.realization[this.realization.length - 1].join(" ") == lineToPush.join(" ")) {
+            return;
+        }
+        
+        this.realization.push(lineToPush);
     }
 
     update() {
@@ -114,8 +163,9 @@ class Realization {
 
     draw() {
         let charsToDisplay = Math.floor(width / textWidth("A"));
-        let displayText = this.currentLine.slice(this.currentLine.length - charsToDisplay, this.currentLine.length).join(" ");
-        
+        let slicedLine = this.currentLine.slice(this.currentLine.length - charsToDisplay, this.currentLine.length);
+        let displayText = Realization.realizationToRender(slicedLine).join(" ");
+
         fill(0);
         rect(0, height - textS * 2.5, width, height) // rectMode is corners
         fill(240);
@@ -139,7 +189,7 @@ class Corpus {
       updateCorpus(n) {
         // get the value of corpus<n> from the html
         let corpusValue = document.getElementById("corpus" + n).value;
-        grammar = parseText(corpusValue);
+        setGlobalGrammars(corpusValue);
       }
 }
 let corpus = new Corpus();
@@ -181,7 +231,7 @@ class Knobs {
     }
 }
 
-class SlidyWindow {
+class Multitrack {
     constructor(loc) {
         this.loc = loc;
         this.selectedTrack = 0;
@@ -196,6 +246,20 @@ class SlidyWindow {
         }
     }
 
+    changeTrackCount(newTrackCount) {
+        let origTrackCount = this.numTracks;
+        if (newTrackCount > origTrackCount) {
+            for (let i = origTrackCount; i < newTrackCount; i++) {
+                this.initTrack(i);
+            }
+        } else {
+            this.tracks = this.tracks.slice(0, newTrackCount);
+        }
+
+        this.numTracks = newTrackCount;
+        this.trackHeight = this.loc[3] / this.numTracks;
+    }
+
     reset() {
         // TODO: reset all tracks
         for (let i = 0; i < this.numTracks; i++) {
@@ -207,16 +271,11 @@ class SlidyWindow {
     }
 
     initTrack(i) {
-        let track = i % 2 == 0 ? 
-              new IndexTrack(this.tracks.length, this.trackHeight)
-              : new IndexTrack(this.tracks.length, this.trackHeight)
-            // : new CreativeTrack(this.tracks.length, this.trackHeight);
+        let track = new IndexTrack(this.tracks.length, this.trackHeight)
         this.tracks.push(track);
     }
 
-    resetNote(track) {
-        this.tracks[track].hardResetNote();
-    }
+    resetNote(track) { }
 
     moveWord(track, offset) {
         // manually update the location of a word
@@ -272,6 +331,7 @@ class SlidyWindow {
         textSize(slidyWindow.trackHeight);
 
         // draw the tracks
+        // console.log("drawing", this.tracks.length, "tracks")
         for (let i = 0; i < this.tracks.length; i++) {
             this.tracks[i].draw();
         }
@@ -298,6 +358,7 @@ class Track {
         this.selected = false;
 
         this.text = '';
+        this.note = 0; // the midi note that triggered this track
         this.position = startX;
         this.speed = baseSpeed;
 
@@ -315,8 +376,10 @@ class Track {
     }
 
     updateNote(note) {
+        this.note = note;
+
         if (this.text === '') {
-            this.hardResetNote();
+            this.basicResetNote();
         }
 
         this.text    = grammar[note % grammar.length];
@@ -325,19 +388,28 @@ class Track {
         this.setLooping(true);
     }
 
-    hardResetNote() {
-        this.text = '';
-        this.position = startX;
-        this.speed = baseSpeed;
-    }
-
-    softResetNote() {
+    doBasicResetNote() {
         this.position = startX;
         this.speed = baseSpeed;
 
         if (this.i == 0) {
             realization.newLine();
         }
+
+    }
+
+    hardResetNote() {
+        this.text = '';
+        this.position = startX;
+        this.speed = baseSpeed;
+    }
+
+    basicResetNote() {
+        this.doBasicResetNote();
+    }
+
+    advancedResetNote() {
+        this.doBasicResetNote();
     }
 
     draw() {
@@ -345,54 +417,52 @@ class Track {
         rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
 
         let lineText = this.text.toUpperCase();
+        // replace ## with -
+        lineText = lineText.replace(/##/g, "-");
         if (visualDebug) {
             fill(255, 0, 0)
             rect(this.position, this.i * this.trackHeight, this.position + 4, this.i * this.trackHeight + this.trackHeight);
         }
-        fill(this.mainColor);
-        text(lineText, this.position, this.i * this.trackHeight);
-        this.position -= this.speed;
 
         if (this.position < -maxTextWidth) {
             if (this.looping) {
                 // reset to the right side of the screen
                 realization.update();
-                this.softResetNote();
+                this.advancedResetNote();
             } else {
                 // reset to the right side of the screen, and clear the text
-                this.hardResetNote();
+                this.basicResetNote();
             }
         }
         
         // Draw the selected track indicator
         if (this.selected) {
-
-
             let strokeColor = this.mainColor;
             stroke(strokeColor, strokeColor, strokeColor);
 
             // hatching
             strokeWeight(2);            
-            let spacing = 9; // Distance between lines
+            let spacing = 5; // Distance between lines
             // Draw first set of diagonal lines
-            // if (this.i % 2 == 0) {
                 for (let x = -this.trackWidth; x < this.trackWidth + this.trackHeight; x += spacing) {
                     line(x, this.bounds[1], x + this.trackHeight, this.bounds[3]);
             }
-            // } else {
-                // Draw second set of diagonal lines in the opposite direction
-                for (let x = this.trackWidth + this.trackHeight; x > -this.trackWidth; x -= spacing) {
-                    line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
-                }
-            // }
+            // Draw second set of diagonal lines in the opposite direction
+            for (let x = this.trackWidth + this.trackHeight; x > -this.trackWidth; x -= spacing) {
+                line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
+            }
             
             // strokeWeight(2);
             // noFill();
-            // rect(this.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
+            // rect(thi s.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
             
             noStroke();
             noFill()
         }
+
+        fill(this.selected ? this.secondaryColor : this.mainColor);
+        text(lineText, this.position, this.i * this.trackHeight);
+        this.position -= this.speed;
 
         if (mouseX > this.bounds[0] && mouseX < this.bounds[2] && mouseY > this.bounds[1] && mouseY < this.bounds[3]) {
             let nextTrackType = getNextTrackType(this.constructor);
@@ -413,12 +483,102 @@ class IndexTrack extends Track {
         super(i, height);
     }
 
+    static doDrawTrackIndicator(color, bounds) { }
+}
+
+class POSTrack extends Track {
+    constructor(i, height) {
+        super(i, height);
+        this.pos = "#Noun";
+    }
+
+    updateNote(note) {
+        this.note = note;
+        if (this.text === '') {
+            this.basicResetNote();
+        }
+
+        if (this.pos === "#Noun") {
+            this.text = nouns[note % nouns.length];
+        } else if (this.pos === "#Adjective") {
+            this.text = adjectives[note % adjectives.length];
+        }
+        else if (this.pos === "#Verb"){
+            this.text = verbs[note % verbs.length];
+        } else {
+            console.log("Error: unknown part of speech", this.pos);
+        }
+
+        realization.update();
+        this.setLooping(true);
+    }
+
+    basicResetNote() {
+        super.advancedResetNote();          // reloop 
+                                            // don't update the note
+    }
+
+    advancedResetNote() {
+        super.advancedResetNote();          // reloop 
+        this.updateNote(this.note + 1);     // update the note
+    }
+
     draw() {
         super.draw();
     }
 
+    static doDrawTrackIndicator(color, bounds, pos="#Noun") {
+        fill(color);
+        let h = (bounds[3] - bounds[1]);
+
+        // rect(
+        //     bounds[0] + h/4, 
+        //     bounds[1] + h/4 * uiScaleState, 
+        //     bounds[0] + h * 3/4,            
+        //     bounds[1] + h * (1 - (1/4 * uiScaleState)),
+        // );
+        text(
+            pos[1], 
+            bounds[0] + h/4, 
+            bounds[1] + h/4 * uiScaleState
+        );
+    }
+}
+
+class NounTrack extends POSTrack {
+    static pos = "#Noun";
+    constructor(i, height) {
+        super(i, height);
+        this.pos = NounTrack.pos;
+    }
+
     static doDrawTrackIndicator(color, bounds) {
-        // Do nothing
+        console.log("in noun")
+        POSTrack.doDrawTrackIndicator(color, bounds, NounTrack.pos);
+    }
+}
+
+class AdjectiveTrack extends POSTrack {
+    static pos = "#Adjective";
+    constructor(i, height) {
+        super(i, height);
+        this.pos = AdjectiveTrack.pos;
+    }
+
+    static doDrawTrackIndicator(color, bounds) {
+        POSTrack.doDrawTrackIndicator(color, bounds, AdjectiveTrack.pos);
+    }
+}
+
+class VerbTrack extends POSTrack {
+    static pos = "#Verb";
+    constructor(i, height) {
+        super(i, height);
+        this.pos = VerbTrack.pos;
+    }
+
+    static doDrawTrackIndicator(color, bounds) {
+        POSTrack.doDrawTrackIndicator(color, bounds, VerbTrack.pos);
     }
 }
 
@@ -429,10 +589,7 @@ class CreativeTrack extends Track {
     }
 
     draw() {
-        super.draw();
-
-        // draw a small square in the far left
-        IndexTrack.doDrawTrackIndicator(this.mainColor, this.bounds);
+        super.draw();           
     }
 
     hardResetNote() {
@@ -440,14 +597,21 @@ class CreativeTrack extends Track {
         this.history = [];
     }
 
-    softResetNote() {
-        super.softResetNote();
-        this.updateNote();
+    basicResetNote() {
+        super.advancedResetNote();   // reloop 
+                                     // don't update the note
+    }
+
+    advancedResetNote() {
+        super.advancedResetNote();   // reloop 
+        this.updateNote(0);          // update the note
     }
 
     updateNote(note) {
+        this.note = note;
+
         if (this.text === '') {
-            this.hardResetNote();
+            this.basicResetNote();
         }
 
         // more elegant way to do this:
@@ -455,7 +619,6 @@ class CreativeTrack extends Track {
         let rightwords = slidyWindow.tracks.slice(this.i + 1, slidyWindow.tracks.length).map(track => track.text);
 
         getCreative(leftwords, rightwords, this.history).then(word => {
-            console.log(leftwords, rightwords, "returns", word)
             this.text = word
             realization.update();
             this.history.push(word);
@@ -468,15 +631,14 @@ class CreativeTrack extends Track {
 
         rect(
             bounds[0] + h/4 * uiScaleState, 
-            bounds[1] + h/4 * uiScaleState, 
+            bounds[1] + h/4, // * uiScaleState, 
             bounds[0] + h * (1 - (1/4 * uiScaleState)),            
-            bounds[1] + h * (1 - (1/4 * uiScaleState)),
+            bounds[1] + h * 3/4, // (1 - (1/4 * uiScaleState)),
         );
     }
 }
 
-
-let trackCycle = [IndexTrack, CreativeTrack];
+let trackCycle = [IndexTrack, AdjectiveTrack, NounTrack, VerbTrack, CreativeTrack];
 function getNextTrackType(trackType) {
     return trackCycle[(trackCycle.indexOf(trackType) + 1) % trackCycle.length];
 }
@@ -509,7 +671,7 @@ function setup() {
     start = createVector(0, 0)
     frameRate(26);
 
-    slidyWindow = new SlidyWindow([0, 0, width, height - 100]);
+    slidyWindow = new Multitrack([0, 0, width, height - 100]);
     textLocation = [width - 100, slidyWindow.loc[3]];
     maxTracksNum = slidyWindow.loc[3] / slidyWindow.trackHeight;
 
@@ -552,7 +714,6 @@ function handleMIDIMessage(message) {
     curMessage = message;
     const channelNumber = (message.data[0] & 0x0F) + 1; // channelNumber is 1 indexed in Ableton, so we are copying that here
     const eventType = message.data[0] >> 4;
-
 
     command = message.data[0]; // https://computermusicresource.com/MIDI.Commands.html
     note = message.data[1] ? message.data[1] : 0;
@@ -662,6 +823,9 @@ function keyTyped() {
         slidyWindow.tracks[slidyWindow.selectedTrack].setLooping(!slidyWindow.tracks[slidyWindow.selectedTrack].looping);
     } else if (key === '2' || keyCode === 32) { // Spacebar or '2'
         changeTrackType(slidyWindow.selectedTrack);
+    } else if (false) {
+        isPaused = !isPaused;
+        setSpeeds(isPaused ? 0 : baseSpeed);
     }
 
     if (index == -1) {

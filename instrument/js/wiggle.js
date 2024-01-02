@@ -207,6 +207,10 @@ function submitCallback(n) {
     corpus.updateCorpus(n);
 }
 
+function openPerformTab() {
+    window.open("../html/wiggle_performance.html", "_blank");
+}
+
 class Knobs {
     constructor() {
         this.knobs = new Array(8).fill(0);

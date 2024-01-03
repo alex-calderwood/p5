@@ -1,4 +1,5 @@
 let base_url = 'http://127.0.0.1:5000';
+let performance; // the performance tab
 
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
@@ -194,6 +195,32 @@ function realizationEditCallback(value) {
     realization.edit(value);
 }
 
+function performWord(word) {
+    // send the word to the performance tab
+    if (performance) {
+        performance.postMessage({data:
+            {
+                type: "addWord",
+                word: word,
+            }
+        }, "*")
+    }
+
+    // update the realization
+    realization.update();
+}
+
+function updatePerformanceWord(word) {
+    // send the word to the performance tab
+    if (performance) {
+        performance.postMessage({data: 
+            {
+                type: "updateWord",
+                word: word,
+            }
+        }, "*");
+    }
+}
 
 class Corpus {
       updateCorpus(n) {
@@ -208,7 +235,12 @@ function submitCallback(n) {
 }
 
 function openPerformTab() {
-    window.open("../html/wiggle_performance.html", "_blank");
+    performance = window.open("../html/wiggle_performance.html", "_blank");
+
+    // Wait for the new tab to fully load
+    performance.onload = function() {
+        performance.postMessage({data: "hello from the original tab"}, "*");
+    };
 }
 
 class Knobs {
@@ -396,9 +428,8 @@ class Track {
         }
 
         this.text    = grammar[note % grammar.length];
-        realization.update();
 
-        // this.setIsAdvanced(true);
+        realization.update();
     }
 
     doBasicResetNote() {
@@ -438,9 +469,11 @@ class Track {
         }
 
         if (this.position < -maxTextWidth) {
+            // send the word to the performance tab
+            performWord(this.text)
+
             if (this.isAdvanced) {
                 // reset to the right side of the screen
-                realization.update();
                 this.advancedResetNote();
             } else {
                 // reset to the right side of the screen, and clear the text
@@ -632,9 +665,9 @@ class CreativeTrack extends Track {
         let rightwords = slidyWindow.tracks.slice(this.i + 1, slidyWindow.tracks.length).map(track => track.text);
 
         getCreative(leftwords, rightwords, this.history).then(word => {
-            this.text = word
-            realization.update();
+            this.text = word;
             this.history.push(word);
+            realization.update();
         })
     }
 

@@ -60,7 +60,8 @@ setGlobalGrammars(library["cutup"]);
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 let userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 8;
+let userSpecifiedNumTracks = 30;
+
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
@@ -87,10 +88,13 @@ let textLocation = [0, 40];
 let color = [0, 0, 0];
 let monoSynth;
 let command, note, velocity;
-let range = [0, 120];
+
+let pianoMode = false;
+let range = pianoMode ? [0, 120] : [40, 89];
 
 let slidyWindow;
 let knobs;
+
 
 let grammarIndex = 0;
 
@@ -386,9 +390,11 @@ class Track {
     updateNote(note) {
         this.note = note;
 
-        if (this.text === '') {
-            this.basicResetNote();
-        }
+        // if (this.text === '') {
+        //     this.basicResetNote();
+        // }
+
+        this.basicResetNote();
 
         this.text    = grammar[note % grammar.length];
         realization.update();
@@ -503,9 +509,10 @@ class POSTrack extends Track {
 
     updateNote(note) {
         this.note = note;
-        if (this.text === '') {
-            this.basicResetNote();
-        }
+        // if (this.text === '') {
+        //     this.basicResetNote();
+        // }
+        this.basicResetNote();
 
         if (this.pos === "#Noun") {
             this.text = nouns[note % nouns.length];
@@ -618,9 +625,9 @@ class CreativeTrack extends Track {
     updateNote(note) {
         this.note = note;
 
-        if (this.text === '') {
-            this.basicResetNote();
-        }
+        // if (this.text === '') {
+        this.basicResetNote();
+        // }
 
         // more elegant way to do this:
         let leftwords = slidyWindow.tracks.slice(0, this.i).map(track => track.text);
@@ -681,7 +688,8 @@ function setup() {
 
     slidyWindow = new Multitrack([0, 0, width, height - 100]);
     textLocation = [width - 100, slidyWindow.loc[3] + 200];
-    maxTracksNum = slidyWindow.loc[3] / slidyWindow.trackHeight;
+    maxTracksNum = Math.floor(slidyWindow.loc[3] / slidyWindow.trackHeight); // why am I calculating this?
+    console.log('maxTracksNum', maxTracksNum);
 
     knobs = new Knobs();
     knobs.draw();
@@ -764,18 +772,21 @@ function handleMIDIMessage(message) {
     text('Velocity: ' + velocity,      textLocation[0], textLocation[1] + 20);
     text('Event: '    + eventType,     textLocation[0], textLocation[1] + 40);
 
-    console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
+    // console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
 
     if (eventType === 9) { // Note on message
-        let x = s(range[0], range[1], 0, width, note);
-        let y = s(0, 127, 0, height, velocity);
-        y = height - y;
-        fill(color[0], color[1], color[2]);
-        updateColor();
+        // let x = s(range[0], range[1], 0, width, note);
+        // let y = s(0, 127, 0, height, velocity);
+        // y = height - y;
+        // fill(color[0], color[1], color[2]);
+        // updateColor();
 
         // playSynth();
 
-        slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
+
+        let offsetNote = Math.ceil(s(range[0], range[1], 0, range[1] - range[0], note));
+        console.log("Channel", channelNumber, "Command", command, "Note", note, "OffsetNote", offsetNote, "Velocity", velocity, "Event", eventType)
+        slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(offsetNote);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
 
     }

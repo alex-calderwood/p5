@@ -60,7 +60,8 @@ setGlobalGrammars(library["cutup"]);
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 let userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 8;
+let userSpecifiedNumTracks = 20;
+
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels

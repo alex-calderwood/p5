@@ -1,4 +1,4 @@
-let base_url = 'http://127.0.0.1:5000';
+let base_url = 'http://localhost:5000';
 let performance; // the performance tab
 
 let library = {
@@ -18,6 +18,16 @@ function qwertyIndex(c) {
     return qwerty.indexOf(c);
 }
 
+// Create a new Worder instance
+let worder = new Worder();
+
+// Add the mixin to the specific instance
+Object.assign(worder, indexWorderMixin);
+worder.setCorpus(library["cutup"]);
+// Object.assign(worder, bertWorderMixin);
+Object.assign(worder, llamaWorderMixin);
+Object.assign(worder, indexWorderMixin);
+
 // populate the html with the corpus values by selecting the corpus textareas by their ids (corpus1, corpus2, corpus3)
 // and setting their values to the keys of the library
 for (let i = 1; i <= 3; i++) {
@@ -26,7 +36,7 @@ for (let i = 1; i <= 3; i++) {
         corpusTextArea.value = Object.values(library)[0].toUpperCase();
     }
     else {
-        let randomIndex = Math.floor(Math.random() * Object.keys(library).length) + 1;
+        let randomIndex = Math.floor(Math.random() * Object.values(library).length);
         corpusTextArea.value = Object.values(library)[randomIndex].toUpperCase();
     }
 }
@@ -60,7 +70,7 @@ setGlobalGrammars(library["cutup"]);
 
 // USER SETTINGS
 const virtualMidiKeyboard = true;
-let userSpecifiedHeight = 250;
+var userSpecifiedHeight = 250;
 let userSpecifiedNumTracks = 8;
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
@@ -93,7 +103,6 @@ let range = [0, 120];
 let slidyWindow;
 let knobs;
 
-
 let grammarIndex = 0;
 
 let channels = [1, 2, 10]; // The channel number must be in this list to be displayed
@@ -119,6 +128,7 @@ function getCreative(leftwords, rightwords, badwords) {
         return response.json()
     })
     .then(word => {
+        console.log("Got word: ", word);
         return word.toUpperCase();
     })
 }
@@ -195,13 +205,14 @@ function realizationEditCallback(value) {
     realization.edit(value);
 }
 
-function performWord(word) {
+function performWord(word, options=undefined) {
     // send the word to the performance tab
     if (performance) {
         performance.postMessage({data:
             {
                 type: "addWord",
                 word: word,
+                options: options
             }
         }, "*")
     }
@@ -420,14 +431,32 @@ class Track {
         this.secondaryColor = newValue ? 255 : 0;
     }
 
-    updateNote(note) {
+    async updateNote(note) {
         this.note = note;
 
-        if (this.text === '') {
-            this.basicResetNote();
-        }
+        this.basicResetNote();
 
-        this.text    = grammar[note % grammar.length];
+        let text = worder.noteToWord(note);
+        // if text is a promise, await it
+        if (text instanceof Promise) {
+            this.text = await text;
+        } else {
+            this.text = text;
+        }
+        let word = this.text;
+        
+        performWord(word); // send the word to the performance tab
+        worder.addWordToContext(word);
+
+        console.log("n nod", word);
+
+        let additional = worder.noteToWordByLlama(note);
+        let aiText = await additional;
+        for(let word of aiText) {
+            let options = {ai: true};
+            performWord(word, options=options);
+            worder.addWordToContext(word);
+        }
 
         realization.update();
     }
@@ -469,9 +498,6 @@ class Track {
         }
 
         if (this.position < -maxTextWidth) {
-            // send the word to the performance tab
-            performWord(this.text)
-
             if (this.isAdvanced) {
                 // reset to the right side of the screen
                 this.advancedResetNote();
@@ -691,7 +717,7 @@ function getNextTrackType(trackType) {
 
 function setup() {
     noStroke();
-    userSpecifiedHeight = windowHeight * 0.5;
+    userSpecifiedHeight = windowHeight * 0.75;
     maxTextWidth = textWidth("APRETTYLONGWORD");
 
     var canvas = createCanvas(windowWidth, userSpecifiedHeight);
@@ -724,6 +750,8 @@ function setup() {
     knobs = new Knobs();
     knobs.draw();
 
+
+    openPerformTab();
     // change the .submit_button class size to be the same as the track height
     // let submitButtons = document.getElementsByClassName('submit_button');
     // for (let i = 0; i < submitButtons.length; i++) {

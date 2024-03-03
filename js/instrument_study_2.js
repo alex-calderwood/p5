@@ -59,7 +59,7 @@ setGlobalGrammars(library["cutup"]);
 
 // USER SETTINGS
 const virtualMidiKeyboard = true;
-let userSpecifiedHeight = 250;
+let userSpecifiedHeight;
 let userSpecifiedNumTracks = 30;
 
 const baseSpeed = 7;
@@ -660,7 +660,7 @@ function getNextTrackType(trackType) {
 
 function setup() {
     noStroke();
-    userSpecifiedHeight = windowHeight * 0.5;
+    userSpecifiedHeight = windowHeight * 0.75;
     maxTextWidth = textWidth("APRETTYLONGWORD");
 
     var canvas = createCanvas(windowWidth, userSpecifiedHeight);

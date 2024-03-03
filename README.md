@@ -20,6 +20,6 @@ Type the following commands into a terminal
 
 Navigate to
 
-    https://localhost:8101/html/instrument_study_1.html
+    https://localhost:8101/instrument/html/index.html
 
 It has been tested on Firefox

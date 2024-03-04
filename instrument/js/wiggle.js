@@ -205,14 +205,12 @@ function realizationEditCallback(value) {
     realization.edit(value);
 }
 
-function performWord(word, options=undefined) {
-    // send the word to the performance tab
+function performWord(word) {
     if (performance) {
-        performance.postMessage({data:
+         performance.postMessage({data:
             {
                 type: "addWord",
                 word: word,
-                options: options
             }
         }, "*")
     }
@@ -220,6 +218,21 @@ function performWord(word, options=undefined) {
     // update the realization
     realization.update();
 }
+
+window.addEventListener("message", (event) => {
+    // Always validate the origin of the message!
+    if (event.origin !== expectedOrigin) {
+        console.log("Message received from unexpected origin: ", event.origin, "which does not match expected origin of ", expectedOrigin);
+        return;
+    }
+    
+    let data = event.data.data;
+
+    if (data && data.type === "addWord") {
+        let id = data.id;
+        console.log("id", id);
+    }   
+});
 
 function updatePerformanceWord(word) {
     // send the word to the performance tab
@@ -436,26 +449,25 @@ class Track {
 
         this.basicResetNote();
 
-        let text = worder.noteToWord(note);
-        // if text is a promise, await it
+        let word = worder.noteToWord(note);
         if (text instanceof Promise) {
-            this.text = await text;
-        } else {
-            this.text = text;
+            let word = await word;
         }
-        let word = this.text;
-        
+        this.text = word.word;
+
         performWord(word); // send the word to the performance tab
         worder.addWordToContext(word);
 
-        console.log("n nod", word);
-
-        let additional = worder.noteToWordByLlama(note);
-        let aiText = await additional;
-        for(let word of aiText) {
-            let options = {ai: true};
-            performWord(word, options=options);
-            worder.addWordToContext(word);
+        let promisedWord = worder.noteToWordByLlama(note) // worder.noteToWordByLlama(note);
+        let aiText = await promisedWord;
+        console.log("aiText", aiText);
+        let prevID = word.id;
+        for(let aiWord of aiText) {
+            aiWord.ai = true;
+            aiWord.after = prevID; // tell the performer to put it after the original word
+            performWord(aiWord);
+            worder.addWordToContext(aiWord);
+            prevID = aiWord.id;
         }
 
         realization.update();
@@ -468,7 +480,6 @@ class Track {
         if (this.i == 0) {
             realization.newLine();
         }
-
     }
 
     hardResetNote() {

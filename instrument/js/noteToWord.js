@@ -37,10 +37,18 @@ function callBERT(leftwords, rightwords, badwords) {
 class Worder {
     constructor() {
         this.context = [];
+        this._nextWordID = 0;
+    }
+    
+    /* 
+    * This function is for the Worder mixin to implement. It should take a note and return a word.
+    */
+    _noteToWordProtocol(note) {
+        return note.ToString();
     }
 
     addWordToContext(word) {
-        this.context.push(word);
+        this.context.push(word.word); // TODO this isn't going to be indexing correctly
     }
 
     updateContext(newContext) {
@@ -51,8 +59,20 @@ class Worder {
         }
     }
 
+    formatWord(word) {
+        return {
+            id: this.nextID(),
+            word: word,
+        }
+    }
+
     noteToWord(note) {
-        return note.ToString();
+        let word = this._noteToWordProtocol(note)
+        return this.formatWord(word);
+    }
+
+    nextID() {
+        return this._nextWordID++;
     }
 }
 
@@ -67,7 +87,7 @@ let indexWorderMixin = {
 
     },
 
-    noteToWord(note) {
+    _noteToWordProtocol(note) {
         return this.noteToWordByIndex(note);
     }
 }
@@ -83,20 +103,14 @@ let bertWorderMixin = {
         });
     },
 
-    noteToWord(note) {
+    _noteToWordProtocol(note) {
         return this.noteToWordByBert(note);
     }
 }
 
 let llamaWorderMixin = {
-    // curl http://localhost:11434/api/generate -d '{
-    // "model": "llama2",
-    // "prompt": "Why is the sky blue?",
-    // "options": {
-    //     "num_ctx": 4096
-    // }
-    // }'
     noteToWordByLlama(note) {
+        console.log('using llama')
         let context = this.context.join(' ');
         // console.log('Context: ', context);
         return fetch('http://localhost:11434/api/generate', {
@@ -130,13 +144,13 @@ let llamaWorderMixin = {
             words.splice(lastSpace, words.length - lastSpace);
             words = words.join('');
             const parsed = parseText(words);
-            console.log("Ollama:", parsed);
-            return parsed;
+            const final = parsed.map(this.formatWord.bind(this))
+            console.log("Ollama:", final);
+            return final;
           })
     },
 
-    noteToWord(note) {
+    _noteToWordProtocol(note) {
         return this.noteToWordByLlama(note);
     }
 }
-

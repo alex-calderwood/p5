@@ -21,7 +21,6 @@ class TextPerformer {
     }
 
     draw() {
-
         background(0)
 
         let currentX = 0;
@@ -36,8 +35,7 @@ class TextPerformer {
                 currentY += this.lineHeight;
             }
             if (currentY + word.size > windowHeight) {
-                textColor = [random(255), random(255), random(255)];
-                backgroundColor = [255 - textColor[0], 255 - textColor[1], 255 - textColor[2]];
+                background(0);
                 currentX = 0;
                 currentY = 0;
             }
@@ -51,7 +49,6 @@ class TextPerformer {
             text(word.word, word.x, word.y + word.size); // draw the word
 
             currentX += word.width + textWidth(" ");
-
         }
     }
 
@@ -95,7 +92,7 @@ class TextPerformer {
             this.wordOrder.push(id);
         }
 
-        return id;
+        return this.wordOrder.map(id => this.words[id]);
     }
 
     deleteWord(id) {
@@ -115,8 +112,9 @@ window.addEventListener("message", (event) => {
     
     let data = event.data.data;
     if (data && data.type === "addWord") {
-        performer.addWord(data.word);
-        window.parent.postMessage({type: "addWord", id: data.word.id, status: "success"}, expectedOrigin);
+        let newWords = performer.addWord(data.word);
+        console.log("posting", {data: {type: "addWordResponse", words: newWords, status: "success"}})
+        window.opener.postMessage({data: {type: "addWordResponse", words: newWords, status: "success"}}, "*");
     }   
 });
 

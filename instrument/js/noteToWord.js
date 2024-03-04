@@ -84,7 +84,6 @@ let indexWorderMixin = {
     noteToWordByIndex(note) {
         this.lastWord = this.corpus[note % this.corpus.length];
         return this.lastWord;
-
     },
 
     _noteToWordProtocol(note) {

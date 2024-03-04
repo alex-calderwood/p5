@@ -1,5 +1,6 @@
 let base_url = 'http://localhost:5000';
 let performance; // the performance tab
+let expectedOrigin = "https://localhost:8101"
 
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
@@ -71,14 +72,14 @@ setGlobalGrammars(library["cutup"]);
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 var userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 8;
+let userSpecifiedNumTracks = 12;
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
 const visualDebug = false;
 let maxTextWidth = 40; // pixels
 
-let backgroundColor = (0, 0, 110);
+let backgroundColor = (0, 0, 0);
 
 const keyboardMode = 'ableton';
 let knobRange;
@@ -98,9 +99,10 @@ let textLocation = [0, 40];
 let color = [0, 0, 0];
 let monoSynth;
 let command, note, velocity;
-let range = [0, 120];
+let range = [40, 89] // [0, 120];
 
 let slidyWindow;
+let sampleView;
 let knobs;
 
 let grammarIndex = 0;
@@ -227,10 +229,8 @@ window.addEventListener("message", (event) => {
     }
     
     let data = event.data.data;
-
-    if (data && data.type === "addWord") {
-        let id = data.id;
-        console.log("id", id);
+    if (data && data.type === "addWordResponse") {
+        let words = data.words;
     }   
 });
 
@@ -246,11 +246,14 @@ function updatePerformanceWord(word) {
     }
 }
 
+// TODO we don't want this anymore?
 class Corpus {
       updateCorpus(n) {
         // get the value of corpus<n> from the html
         let corpusValue = document.getElementById("corpus" + n).value;
         setGlobalGrammars(corpusValue);
+        worder.setCorpus(corpusValue);
+        sampleView.updateSample(parseText(corpusValue));
       }
 }
 let corpus = new Corpus();
@@ -301,6 +304,77 @@ class Knobs {
     }
 }
 
+class SampleView {
+    constructor(sample, loc) {
+        this.sample = sample;
+        this.loc = loc;
+        this.textS = 16;
+        this.notePlayed = -1;
+    }
+
+    updateSample(sample) {
+        this.sample = sample;
+    }
+
+    updateNote(index) {
+        this.notePlayed = index;
+    }
+
+    draw() {
+        fill(0);
+        noStroke();
+        rect(this.loc[0], this.loc[1], this.loc[2], this.loc[3]);
+        let visTextSize = 12;
+        textSize(visTextSize);
+        let wordIndex = 0;
+        let xSpacing = 100;
+        let ySpacing = 15;
+        for(let j = 0; j < this.loc[3] - this.loc[1]; j += ySpacing) {
+            for (let i = 0; i < this.loc[2] - this.loc[0]; i += xSpacing) {
+                if (wordIndex == this.notePlayed) {
+                    fill(255, 0, 0);
+                } else {
+                    fill(255);
+                }
+                text(this.sample[wordIndex], this.loc[0] + i, this.loc[1] + j);
+                wordIndex++;
+            }
+        }
+    }
+    
+//     let currentX = 0;
+//     let currentY = 0;
+
+// // for (let wordID of this.wordOrder) {
+//     for (let i = 0; i < this.sample.length; i++) {
+//         let word = this.words[wordID];
+//         textSize(word.size);
+//         let wordWidth = textWidth(word.word);
+
+//         if (currentX + wordWidth > windowWidth) {
+//             currentX = 0;
+//             currentY += this.lineHeight;
+//         }
+//         if (currentY + word.size > windowHeight) {
+//             background(0);
+//             currentX = 0;
+//             currentY = 0;
+//         }
+
+//         word.x = currentX;
+//         word.y = currentY;
+
+//         fill(word.backgroundColor[0], word.backgroundColor[1], word.backgroundColor[2]); // set the color to the word's background color
+//         rect(word.x, word.y, word.x + word.wordWidth, word.y + word.size); // draw the background
+//         fill(word.color[0], word.color[1], word.color[2]); // set the color to the word's color
+//         text(word.word, word.x, word.y + word.size); // draw the word
+
+//         currentX += word.width + textWidth(" ");
+//         }    
+//     }
+}
+
+
 class Multitrack {
     constructor(loc) {
         this.loc = loc;
@@ -308,7 +382,7 @@ class Multitrack {
         this.knobOffset = 0
         this.selectedTrackBaseIndex = 0;
         this.numTracks = userSpecifiedNumTracks;
-        this.trackHeight = this.loc[3] / this.numTracks;
+        this.trackHeight = (this.loc[3] - this.loc[1]) / this.numTracks;
         this.tracks = [];
 
         for (let i = 0; i < this.numTracks; i++) {
@@ -327,7 +401,7 @@ class Multitrack {
         }
 
         this.numTracks = newTrackCount;
-        this.trackHeight = this.loc[3] / this.numTracks;
+        this.trackHeight =  (this.loc[3] - this.loc[1]) / this.numTracks;
     }
 
     reset() {
@@ -341,7 +415,7 @@ class Multitrack {
     }
 
     initTrack(i) {
-        let track = new IndexTrack(this.tracks.length, this.trackHeight)
+        let track = new IndexTrack(this.tracks.length, this.trackHeight, this.loc)
         this.tracks.push(track);
     }
 
@@ -354,7 +428,7 @@ class Multitrack {
 
     sortTracks() {
         let baseline = this.tracks[0].position;
-        let modWidth = this.loc[2]
+        let modWidth = this.loc[2] - this.loc[0];
 
         let xs = this.tracks.map(track => [track.i, track.position]);
         // sort the tracks by their position
@@ -419,10 +493,11 @@ class Multitrack {
 }
 
 class Track {
-    constructor(i, height) {
+    constructor(i, trackHeight, multiLoc) {
         this.i = i;
-        this.trackHeight = height;
-        this.trackWidth = width;
+        this.multiLoc = multiLoc;
+        this.trackHeight = trackHeight;
+        this.trackWidth = multiLoc[2] - multiLoc[0];
         this.isAdvanced = true;
         this.selected = false;
 
@@ -432,7 +507,7 @@ class Track {
         this.speed = baseSpeed;
 
         // [x1, y1, x2, y2]
-        this.bounds = [0, this.i * this.trackHeight, this.trackWidth, this.i * this.trackHeight + this.trackHeight];
+        this.bounds = [this.multiLoc[0], this.multiLoc[1] + this.i * this.trackHeight, this.trackWidth, this.multiLoc[1] + this.i * this.trackHeight + this.trackHeight];
 
         this.mainColor = 255;
         this.secondaryColor = 0;
@@ -446,8 +521,8 @@ class Track {
 
     async updateNote(note) {
         this.note = note;
-
         this.basicResetNote();
+        sampleView.updateNote(note);
 
         let word = worder.noteToWord(note);
         if (text instanceof Promise) {
@@ -535,16 +610,12 @@ class Track {
                 line(x, this.bounds[1], x - this.trackHeight, this.bounds[3]);
             }
             
-            // strokeWeight(2);
-            // noFill();
-            // rect(thi s.bounds[0], this.bounds[1], this.bounds[2], this.bounds[3]);
-            
             noStroke();
             noFill()
         }
 
         fill(this.selected ? this.secondaryColor : this.mainColor);
-        text(lineText, this.position, this.i * this.trackHeight);
+        text(lineText, this.position, this.bounds[1]);
         this.position -= this.speed;
 
         if (mouseX > this.bounds[0] && mouseX < this.bounds[2] && mouseY > this.bounds[1] && mouseY < this.bounds[3]) {
@@ -563,16 +634,16 @@ class Track {
 
 
 class IndexTrack extends Track {
-    constructor(i, height) {
-        super(i, height);
+    constructor(i, trackHeight, multiLoc) {
+        super(i, trackHeight, multiLoc);
     }
 
     static doDrawTrackIndicator(color, bounds) { }
 }
 
 class POSTrack extends Track {
-    constructor(i, height) {
-        super(i, height);
+    constructor(i, trackHeight, multiLoc) {
+        super(i, trackHeight, multiLoc);
         this.pos = "#Noun";
     }
 
@@ -631,8 +702,8 @@ class POSTrack extends Track {
 
 class NounTrack extends POSTrack {
     static pos = "#Noun";
-    constructor(i, height) {
-        super(i, height);
+    constructor(i, trackHeight, multiLoc) {
+        super(i, trackHeight, multiLoc);
         this.pos = NounTrack.pos;
     }
 
@@ -643,8 +714,8 @@ class NounTrack extends POSTrack {
 
 class AdjectiveTrack extends POSTrack {
     static pos = "#Adjective";
-    constructor(i, height) {
-        super(i, height);
+    constructor(i, trackHeight, multiLoc) {
+        super(i, trackHeight, multiLoc);
         this.pos = AdjectiveTrack.pos;
     }
 
@@ -655,8 +726,8 @@ class AdjectiveTrack extends POSTrack {
 
 class VerbTrack extends POSTrack {
     static pos = "#Verb";
-    constructor(i, height) {
-        super(i, height);
+    constructor(i, trackHeight, multiLoc) {
+        super(i, trackHeight, multiLoc);
         this.pos = VerbTrack.pos;
     }
 
@@ -754,22 +825,17 @@ function setup() {
     start = createVector(0, 0)
     frameRate(26);
 
-    slidyWindow = new Multitrack([0, 0, width, height - 100]);
+    sampleView = new SampleView(worder.corpus, [0, 0, width, height / 4]);
+    slidyWindow = new Multitrack([0, sampleView.loc[3], width, height / 4 + 200]);
+    console.log(height, sampleView.loc, slidyWindow.loc)
     textLocation = [width - 100, slidyWindow.loc[3] + 200];
-    maxTracksNum = slidyWindow.loc[3] / slidyWindow.trackHeight;
+    maxTracksNum = (slidyWindow.loc[3] - slidyWindow.loc[1]) / slidyWindow.trackHeight;
 
     knobs = new Knobs();
     knobs.draw();
 
-
     openPerformTab();
-    // change the .submit_button class size to be the same as the track height
-    // let submitButtons = document.getElementsByClassName('submit_button');
-    // for (let i = 0; i < submitButtons.length; i++) {
-    //     submitButtons[i].style.height = 2 * slidyWindow.trackHeight + "px";
-    // }
 }
-
 
 function onMIDISuccess(midi) {
     midiAccess = midi;
@@ -852,9 +918,9 @@ function handleMIDIMessage(message) {
 
         // playSynth();
 
+        console.log(slidyWindow.selectedTrack, slidyWindow.tracks)
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
-
     }
     else if (eventType === 8) { // Note off message
         // offSynth();
@@ -908,7 +974,7 @@ function keyTyped() {
     if (key === '1') {
         slidyWindow.tracks[slidyWindow.selectedTrack].setIsAdvanced(!slidyWindow.tracks[slidyWindow.selectedTrack].isAdvanced);
     } else if (key === '2' || keyCode === 32) { // Spacebar or '2'
-        changeTrackType(slidyWindow.selectedTrack);
+
     } else if (false) {
         isPaused = !isPaused;
         setSpeeds(isPaused ? 0 : baseSpeed);
@@ -970,6 +1036,7 @@ function reset() {
 function draw() {
     // main draw call
     realization.draw();
+    sampleView.draw();
     slidyWindow.draw();
 
     uiScaleStateTracker = uiScaleStateTracker + 0.02;
@@ -1012,16 +1079,4 @@ function mousePressed() {
             }
         }
     }
-}
-
-function changeTrackType(trackIndex) {
-    let track = slidyWindow.tracks[trackIndex];
-    let nextTrackType = getNextTrackType(track.constructor);
-    let newTrack =  new nextTrackType(track.i, track.trackHeight);
-    newTrack.text = track.text;
-    newTrack.position = track.position;
-    newTrack.speed = track.speed;
-    newTrack.setIsAdvanced(track.isAdvanced);
-    newTrack.selected = track.selected;
-    slidyWindow.tracks[track.i] = newTrack;
 }

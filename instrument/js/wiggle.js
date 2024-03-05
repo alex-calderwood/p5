@@ -25,7 +25,7 @@ let worder = new Worder();
 // Add the mixin to the specific instance
 Object.assign(worder, indexWorderMixin);
 worder.setCorpus(library["cutup"]);
-// Object.assign(worder, bertWorderMixin);
+Object.assign(worder, bertWorderMixin);
 Object.assign(worder, llamaWorderMixin);
 Object.assign(worder, indexWorderMixin);
 
@@ -130,7 +130,6 @@ function getCreative(leftwords, rightwords, badwords) {
         return response.json()
     })
     .then(word => {
-        console.log("Got word: ", word);
         return word.toUpperCase();
     })
 }
@@ -158,7 +157,6 @@ class Realization {
          * push the current line to the realization
          * avoiding duplicates
          */
-
         let lineToPush = Realization.realizationToRender(this.currentLine);
 
         if (this.realization.length > 0 && this.realization[this.realization.length - 1].join(" ") == lineToPush.join(" ")) {
@@ -221,6 +219,17 @@ function performWord(word) {
     realization.update();
 }
 
+function updatePerformanceWord(word) {
+    if (performance) {
+         performance.postMessage({data:
+            {
+                type: "updateWord",
+                word: word,
+            }
+        }, "*")
+    }
+}
+
 window.addEventListener("message", (event) => {
     // Always validate the origin of the message!
     if (event.origin !== expectedOrigin) {
@@ -231,20 +240,10 @@ window.addEventListener("message", (event) => {
     let data = event.data.data;
     if (data && data.type === "addWordResponse") {
         let words = data.words;
+        // console.log("new words", words)
     }   
 });
 
-function updatePerformanceWord(word) {
-    // send the word to the performance tab
-    if (performance) {
-        performance.postMessage({data: 
-            {
-                type: "updateWord",
-                word: word,
-            }
-        }, "*");
-    }
-}
 
 // TODO we don't want this anymore?
 class Corpus {
@@ -263,11 +262,12 @@ function submitCallback(n) {
 
 function openPerformTab() {
     performance = window.open("../html/wiggle_performance.html", "_blank");
-
-    // Wait for the new tab to fully load
-    performance.onload = function() {
-        performance.postMessage({data: "hello from the original tab"}, "*");
-    };
+    // Wait for the nfirew tab to fully load
+    if (performance) {
+        performance.onload = function() {
+            performance.postMessage({data: "hello from the original tab"}, "*");
+        };
+    }
 }
 
 class Knobs {
@@ -473,8 +473,6 @@ class Multitrack {
         textS = slidyWindow.trackHeight;
         textSize(textS);
 
-        // draw the tracks
-        // console.log("drawing", this.tracks.length, "tracks")
         for (let i = 0; i < this.tracks.length; i++) {
             this.tracks[i].draw();
         }
@@ -535,7 +533,6 @@ class Track {
 
         let promisedWord = worder.noteToWordByLlama(note) // worder.noteToWordByLlama(note);
         let aiText = await promisedWord;
-        console.log("aiText", aiText);
         let prevID = word.id;
         for(let aiWord of aiText) {
             aiWord.ai = true;
@@ -827,7 +824,6 @@ function setup() {
 
     sampleView = new SampleView(worder.corpus, [0, 0, width, height / 4]);
     slidyWindow = new Multitrack([0, sampleView.loc[3], width, height / 4 + 200]);
-    console.log(height, sampleView.loc, slidyWindow.loc)
     textLocation = [width - 100, slidyWindow.loc[3] + 200];
     maxTracksNum = (slidyWindow.loc[3] - slidyWindow.loc[1]) / slidyWindow.trackHeight;
 
@@ -918,7 +914,6 @@ function handleMIDIMessage(message) {
 
         // playSynth();
 
-        console.log(slidyWindow.selectedTrack, slidyWindow.tracks)
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     }
@@ -998,6 +993,7 @@ function keyTyped() {
 
 function keyPressed() {
     if (keyCode === ENTER) {
+        addLineBreak();
     } else if (keyCode === DOWN_ARROW) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     } else if (keyCode === UP_ARROW) {
@@ -1013,6 +1009,12 @@ function keyPressed() {
     else if (keyCode === 32) { // spacebar
         // want to pause?   
     }
+}
+
+function addLineBreak() {
+    let word = worder.formatWord("\n");
+    performWord(word);
+    worder.addWordToContext(word);
 }
 
 // function playSynth() {
@@ -1032,6 +1034,44 @@ function reset() {
     background(40);
     slidyWindow.reset();
 }
+
+let doDeform = false;
+function toggleDeform() {
+    doDeform = !doDeform;
+    // change the class of the button
+    let button = document.getElementById("deformButton");
+    button.className = doDeform ? "selected submit_button" : "submit_button";
+}
+
+async function deform() {
+    if (!doDeform) {
+        return;
+    }
+
+    let currentContext = worder.getContextData();
+    if (currentContext.length == 0) {
+        return;
+    }
+    // randomly select one from the list
+    let index = Math.floor(Math.random() * currentContext.length)
+    let before = currentContext.slice(0, index);
+    let word = currentContext[index];
+    let after = currentContext.slice(index + 1, currentContext.length);
+    let bertResponse = callBERT(before.map(w => w.word), after.map(w => w.word), []);
+    let newWord = await bertResponse;
+
+    if (word.word === newWord) {
+        return;
+    }
+
+    word.word = newWord;
+    word.ai = false;
+    word.deform = true;
+    worder.words[word.id] = word;
+    updatePerformanceWord(word);
+}
+// while doDeform is true, call it every 3 seconds
+// setInterval(deform, 3000);
 
 function draw() {
     // main draw call

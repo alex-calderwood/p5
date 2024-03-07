@@ -2,7 +2,8 @@ let base_url = 'http://localhost:5000';
 let performance; // the performance tab
 let expectedOrigin = "https://localhost:8101"
 
-const deformInterval = 1000;
+let deformInterval;
+let deformRate = 5000;
 
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
@@ -305,6 +306,8 @@ class SampleView {
         this.updateWorder(worder);
         this.loc = loc;
         this.textS = 16;
+        this.xSpacing = 140;
+        this.ySpacing = 15;
         this.notePlayed = -1;
     }
 
@@ -324,10 +327,8 @@ class SampleView {
         let visTextSize = 12;
         textSize(visTextSize);
         let wordIndex = 0;
-        let xSpacing = 100;
-        let ySpacing = 15;
-        for(let j = 0; j < this.loc[3] - this.loc[1]; j += ySpacing) {
-            for (let i = 0; i < this.loc[2] - this.loc[0]; i += xSpacing) {
+        for(let j = 0; j < this.loc[3] - this.loc[1]; j += this.ySpacing) {
+            for (let i = 0; i < this.loc[2] - this.loc[0] - this.xSpacing; i += this.xSpacing) {
                 if (wordIndex == this.notePlayed) {
                     fill(255, 0, 0);
                 } else {
@@ -879,14 +880,6 @@ function addLineBreak() {
     worder.addWordToContext(word);
 }
 
-// function playSynth() {
-//   monoSynth.triggerAttack(note, velocity);
-// }
-
-// function offSynth() {
-//     monoSynth.triggerRelease();
-// }
-
 
 function preload() {
     // pass
@@ -897,14 +890,6 @@ function reset() {
     slidyWindow.reset();
 }
 
-let doDeform = false;
-function toggleDeform() {
-    doDeform = !doDeform;
-    // change the class of the button
-    let button = document.getElementById("deformButton");
-    button.className = doDeform ? "selected submit_button" : "submit_button";
-}
-toggleDeform(true);
 
 function getDeformPrompt() {
     let topic_verb = "friendship"
@@ -922,8 +907,20 @@ async function deform() {
     if (currentContext.length == 0) {
         return;
     }
-    // randomly select one from the list
-    let index = Math.floor(Math.random() * currentContext.length)
+    
+    let dontDeformLastLine = true;
+    let deformLimit = -1;
+    
+    deformLimit = dontDeformLastLine ? deformLimit : currentContext.length;
+    if (dontDeformLastLine) {
+        for (let i = 0; i < currentContext.length; i++) {
+            if (currentContext[i].word == '\n') deformLimit = i;
+        }
+        if (deformLimit === -1) return;
+    } else {
+        deformLimit = currentContext.length;
+    }
+    let index = Math.floor(Math.random() * deformLimit)
     let before = currentContext.slice(0, index);
     let word = currentContext[index];
     let after = currentContext.slice(index + 1, currentContext.length);
@@ -940,8 +937,21 @@ async function deform() {
     worder.words[word.id] = word;
     updatePerformanceWord(word);
 }
-// while doDeform is true, call it every 3 seconds
-setInterval(deform, deformInterval);
+
+let doDeform = false;
+function toggleDeform() {
+    doDeform = !doDeform;
+    // change the class of the button
+    let button = document.getElementById("deformButton");
+    button.className = doDeform ? "selected submit_button" : "submit_button";
+    deformRate = document.getElementById("deformRate").value * 1000;
+
+    clearInterval(deformInterval);
+    deformInterval = setInterval(deform, deformRate);
+}
+toggleDeform();
+
+
 
 function draw() {
     // main draw call

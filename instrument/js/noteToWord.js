@@ -119,6 +119,19 @@ class Worder {
     nextID() {
         return this._nextWordID++;
     }
+
+    curLineLength() {
+        let words = this.getContextData();
+        let lastLineLength = words.length;
+        for (let i = words.length - 1; i >= 0; i--) {
+            let word = words[i];
+            if (word.word == '\n') {
+                lastLineLength = words.length - i;
+                break;
+            }
+        }
+        return lastLineLength;
+    }
 }
 
 let indexWorderMixin = {

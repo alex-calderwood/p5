@@ -778,6 +778,11 @@ function handleMIDIMessage(message) {
 
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(noteData);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
+    
+        // Add a new line
+        if (worder.curLineLength() > 5) {
+            addLineBreak()
+        }
     }
     else if (eventType === 8) { // Note off message
         // offSynth();

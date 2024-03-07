@@ -519,9 +519,7 @@ class Track {
         this.basicResetNote();
         sampleView.updateNote(note);
 
-        console.log('updating note', note);
         let words = worder.noteToWords(note);
-        console.log('track words', words);
         if (text instanceof Promise) {
             words = await words;
         }

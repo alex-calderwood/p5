@@ -2,15 +2,19 @@ let base_url = 'http://localhost:5000';
 let performance; // the performance tab
 let expectedOrigin = "https://localhost:8101"
 
+const deformInterval = 1000;
+
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
     "pataphysics": "pataphysics is the science of the realm beyond metaphysics… It will study the laws which govern exceptions and will explain the universe supplementary to this one; or, less ambitiously, it will describe a universe which one can see — must see perhaps — instead of the traditional one… Definition: pataphysics is the science of imaginary solutions, which symbolically attributes the properties of objects, described by their virtuality, to their lineaments (Jarry 1963: 131).",
     // https://dbanach.com/enneads/enneads-study2.htm
     "deconstruction": "Certainly, Derrida’s style is not traditional. In the same speech from 1980 at the time of him being awarded a doctorate, Derrida tells us that, in the Seventies, he devoted himself to developing a style of writing. The most clearest example is his 1974 Glas (“Death Knell” would be an approximate English translation; the current English translation simply uses the word “glas”); here Derrida writes in two columns, with the left devoted to a reading of Hegel and the right devoted to a reading of the French novelist-playwright Jean Genet. Another example would be his 1980 Postcard from Socrates to Freud and Beyond; the opening two hundred pages of this book consist of love letters addressed to no one in particular. It seems that sometime around this time (1980), Derrida reverted back to the more linear and somewhat argumentative style, the very style that defined his texts from the Sixties. He never however renounced a kind of evocation, a calling forth that truly defines deconstruction. Derrida takes the idea of a call from Heidegger. Starting in 1968 with “The Ends of Man,” Derrida devoted a number of texts to Heidegger’s thought. But, it is really with the 1978 publication of The Truth in Painting, and then throughout the 1980s, that Derrida intensified his reading of Heidegger. In particular, he wrote a series of essays on the question of sex or race in Heidegger (“Geschlecht I–IV”). While frequently critical, these essays often provide new insights into Heidegger’s thought. The culminating essay in Derrida’s series on Heidegger is his 1992 Aporias.",
-    "genres": "comedy tragedy history romance tragicomedy fantasy musical melodrama",
+    // "genres": "comedy tragedy history romance tragicomedy fantasy musical melodrama",
+    "declaration": "When in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume among the powers of the earth, the separate and equal station to which the Laws of Nature and of Nature's God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation. We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness",
     "enneads": "To live at ease is There and to these divine beings verity is mother and nurse existence and sustenance all that is not of process but of authentic being they see and themselves in all for all is transparent nothing dark nothing resistant every being is lucid to every other in breadth and depth light runs through light. And each of them contains all within itself, and at the same time sees all in every other, so that everywhere there is all, and all is all and each all, and infinite the glory. Each of them is great; the small is great; the sun, There, is all the stars; and every star, again, is all the stars and sun. While some one manner of being is dominant in each, all are mirrored in every other.  Movement There is pure [as self-caused] for the moving principle is not a separate thing to complicate it as it speeds.  So, too, Repose is not troubled, for there is no admixture of the unstable; and the Beauty is all beauty since it is not merely resident [as an attribute or addition] in some beautiful object. Each There walks upon no alien soil; its place is its essential self; and, as each moves, so to speak, towards what is Above, it is attended by the very ground from which it starts: there is no distinguishing between the Being and the Place; all is Intellect, the Principle and",
-    "funny": "This trick has to do with the words you choose. Some words are inherently funnier than others according to humor experts (there’s always an expert). Words that contain the consonants p, b, d, g, t or k (known as plosives for anyone who cares) are funnier. Some examples of funnier words: brouhaha, pandemonium, or hullabaloo instead of chaos scamper, bustle, or skedaddle instead of hurry hoodwink, dupe, or bamboozle instead of mislead Make friends with your Thesaurus to find funnier sounding synonyms. Another way to add humor through word choice is to use specific words. When writing, it’s easy to opt for weak words. And that’s okay when you’re in draft mode. But when you edit your writing, try to replace those unimaginative nouns with more specific ones. For example if you’re writing about the last experience at your auto repair shop. Describe your car. What type of repair did it need? Discovering your 2003 Ford Focus had loose lug nuts seems funnier than taking your car in for a rattle. (Almost true experience. I don’t drive a Ford Focus, but my car did suffer loose lug nuts.)",
+    "to_be": "To be, or not to be, that is the question: Whether 'tis nobler in the mind to suffer The slings and arrows of outrageous fortune, Or to take arms against a sea of troubles And by opposing end them. To die—to sleep, No more; and by a sleep to say we end The heart-ache and the thousand natural shocks That flesh is heir to: 'tis a consummation Devoutly to be wish'd. To die, to sleep; To sleep, perchance to dream—ay, there's the rub: For in that sleep of death what dreams may come, When we have shuffled off this mortal coil, Must give us pause—there's the respect That makes calamity of so long life. For who would bear the whips and scorns of time, Th'oppressor's wrong, the proud man's contumely, The pangs of dispriz'd love, the law's delay, The insolence of office, and the spurns That patient merit of th'unworthy takes, When he himself might his quietus make With a bare bodkin? Who would fardels bear, To grunt and sweat under a weary life, But that the dread of something after death, The undiscovere'd country, from whose bourn No traveller returns, puzzles the will, And makes us rather bear those ills we have Than fly to others that we know not of? Thus conscience doth make cowards of us all, And thus the native hue of resolution Is sicklied o'er with the pale cast of thought, And enterprises of great pith and moment With this regard their currents turn awry And lose the name of action.",
     "wake": "riverrun, past Eve and Adam’s, from swerve of shore to bend of bay, brings us by a commodius vicus of recirculation back to Howth Castle and Environs. Sir Tristram, violer d’amores, fr’over the short sea, had passencore rearrived from North Armorica on this side the scraggy isthmus of Europe Minor to wielderfight his penisolate war: nor had topsawyer’s rocks by the stream Oconee exaggerated themselse to Laurens County’s gorgios while they went doublin their mumper all the time: nor avoice from afire bellowsed mishe mishe to tauftauf thuartpeatrick not yet, though venissoon after, had a kidscad buttended a bland old isaac: not yet, though all’s fair in vanessy, were sosie sesthers wroth with twone nathandjoe. Rot a peck of pa’s malt had Jhem or Shen br",
+    "gilgamesh": "He who has seen everything, I will make known (?) to the lands. I will teach (?) about him who experienced all things, ... alike, Anu granted him the totality of knowledge of all. He saw the Secret, discovered the Hidden, he brought information of (the time) before the Flood. He went on a distant journey, pushing himself to exhaustion, but then was brought to peace. He carved on a stone stela all of his toils, and built the wall of Uruk-Haven, the wall of the sacred Eanna Temple, the holy sanctuary. Look at its wall which gleams like copper(?), inspect its inner wall, the likes of which no one can equal! Take hold of the threshold stone--it dates from ancient times! Go close to the Eanna Temple, the residence of Ishtar, such as no later king or man ever equaled! Go up on the wall of Uruk and walk around, examine its foundation, inspect its brickwork thoroughly. Is not (even the core of) the brick structure made of kiln-fired brick, and did not the Seven Sages themselves lay out its plans? One league city, one league palm gardens, one league lowlands, the open area(?) of the Ishtar Temple, three leagues and the open area(?) of Uruk it (the wall) encloses. Find the copper tablet box, open the ... of its lock of bronze, undo the fastening of its secret opening. Take and read out from the lapis lazuli tablet how Gilgamesh went through every hardship.",
 }
 
 // const qwerty = "qwertyuiopasdfghjklzxcvbnm"      // first version
@@ -20,14 +24,7 @@ function qwertyIndex(c) {
 }
 
 // Create a new Worder instance
-let worder = new Worder();
-
-// Add the mixin to the specific instance
-Object.assign(worder, indexWorderMixin);
-worder.setCorpus(library["cutup"]);
-Object.assign(worder, bertWorderMixin);
-Object.assign(worder, llamaWorderMixin);
-Object.assign(worder, indexWorderMixin);
+let worder;
 
 // populate the html with the corpus values by selecting the corpus textareas by their ids (corpus1, corpus2, corpus3)
 // and setting their values to the keys of the library
@@ -252,7 +249,7 @@ class Corpus {
         let corpusValue = document.getElementById("corpus" + n).value;
         setGlobalGrammars(corpusValue);
         worder.setCorpus(corpusValue);
-        sampleView.updateSample(parseText(corpusValue));
+        sampleView.updateWorder(worder);
       }
 }
 let corpus = new Corpus();
@@ -261,8 +258,7 @@ function submitCallback(n) {
 }
 
 function openPerformTab() {
-    performance = window.open("../html/wiggle_performance.html", "_blank");
-    // Wait for the nfirew tab to fully load
+    performance = window.open("../html/wiggle_performance.html", "performance");
     if (performance) {
         performance.onload = function() {
             performance.postMessage({data: "hello from the original tab"}, "*");
@@ -305,19 +301,20 @@ class Knobs {
 }
 
 class SampleView {
-    constructor(sample, loc) {
-        this.sample = sample;
+    constructor(worder, loc) {
+        this.updateWorder(worder);
         this.loc = loc;
         this.textS = 16;
         this.notePlayed = -1;
     }
 
-    updateSample(sample) {
-        this.sample = sample;
+    updateWorder(worder) {
+        this.worder = worder;
+        this.sample = worder.corpus;
     }
 
-    updateNote(index) {
-        this.notePlayed = index;
+    updateNote(noteData) {
+        this.notePlayed = this.worder._preprocessNote(noteData).note;
     }
 
     draw() {
@@ -495,7 +492,7 @@ class Track {
         this.i = i;
         this.multiLoc = multiLoc;
         this.trackHeight = trackHeight;
-        this.trackWidth = multiLoc[2] - multiLoc[0];
+        this.trackWidth = this.multiLoc[2] - this.multiLoc[0];
         this.isAdvanced = true;
         this.selected = false;
 
@@ -518,22 +515,29 @@ class Track {
     }
 
     async updateNote(note) {
-        this.note = note;
+        this.note = note.note;
         this.basicResetNote();
         sampleView.updateNote(note);
 
-        let word = worder.noteToWord(note);
+        console.log('updating note', note);
+        let words = worder.noteToWords(note);
+        console.log('track words', words);
         if (text instanceof Promise) {
-            let word = await word;
+            words = await words;
         }
-        this.text = word.word;
+        this.text = words.map(w => w.word).join(' ')
+        console.log('track text', this.text)
 
-        performWord(word); // send the word to the performance tab
-        worder.addWordToContext(word);
+        let lastWord;
+        for (let word of words) {
+            performWord(word); // send the word to the performance tab
+            worder.addWordToContext(word);
+            lastWord = word;
+        }
 
-        let promisedWord = worder.noteToWordByLlama(note) // worder.noteToWordByLlama(note);
+        let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
         let aiText = await promisedWord;
-        let prevID = word.id;
+        let prevID = lastWord.id;
         for(let aiWord of aiText) {
             aiWord.ai = true;
             aiWord.after = prevID; // tell the performer to put it after the original word
@@ -638,158 +642,7 @@ class IndexTrack extends Track {
     static doDrawTrackIndicator(color, bounds) { }
 }
 
-class POSTrack extends Track {
-    constructor(i, trackHeight, multiLoc) {
-        super(i, trackHeight, multiLoc);
-        this.pos = "#Noun";
-    }
-
-    updateNote(note) {
-        this.note = note;
-        if (this.text === '') {
-            this.basicResetNote();
-        }
-
-        if (this.pos === "#Noun") {
-            this.text = nouns[note % nouns.length];
-        } else if (this.pos === "#Adjective") {
-            this.text = adjectives[note % adjectives.length];
-        }
-        else if (this.pos === "#Verb"){
-            this.text = verbs[note % verbs.length];
-        } else {
-            console.log("Error: unknown part of speech", this.pos);
-        }
-
-        realization.update();
-        // this.setIsAdvanced(true);
-    }
-
-    basicResetNote() {
-        super.advancedResetNote();          // reloop 
-                                            // don't update the note
-    }
-
-    advancedResetNote() {
-        super.advancedResetNote();          // reloop 
-        this.updateNote(this.note + 1);     // update the note
-    }
-
-    draw() {
-        super.draw();
-    }
-
-    static doDrawTrackIndicator(color, bounds, pos="#Noun") {
-        fill(color);
-        let h = (bounds[3] - bounds[1]);
-
-        // rect(
-        //     bounds[0] + h/4, 
-        //     bounds[1] + h/4 * uiScaleState, 
-        //     bounds[0] + h * 3/4,            
-        //     bounds[1] + h * (1 - (1/4 * uiScaleState)),
-        // );
-        text(
-            pos[1], 
-            bounds[0] + h/4, 
-            bounds[1] + h/4 * uiScaleState
-        );
-    }
-}
-
-class NounTrack extends POSTrack {
-    static pos = "#Noun";
-    constructor(i, trackHeight, multiLoc) {
-        super(i, trackHeight, multiLoc);
-        this.pos = NounTrack.pos;
-    }
-
-    static doDrawTrackIndicator(color, bounds) {
-        POSTrack.doDrawTrackIndicator(color, bounds, NounTrack.pos);
-    }
-}
-
-class AdjectiveTrack extends POSTrack {
-    static pos = "#Adjective";
-    constructor(i, trackHeight, multiLoc) {
-        super(i, trackHeight, multiLoc);
-        this.pos = AdjectiveTrack.pos;
-    }
-
-    static doDrawTrackIndicator(color, bounds) {
-        POSTrack.doDrawTrackIndicator(color, bounds, AdjectiveTrack.pos);
-    }
-}
-
-class VerbTrack extends POSTrack {
-    static pos = "#Verb";
-    constructor(i, trackHeight, multiLoc) {
-        super(i, trackHeight, multiLoc);
-        this.pos = VerbTrack.pos;
-    }
-
-    static doDrawTrackIndicator(color, bounds) {
-        POSTrack.doDrawTrackIndicator(color, bounds, VerbTrack.pos);
-    }
-}
-
-class CreativeTrack extends Track {
-    constructor(i, height) {
-        super(i, height);
-        this.history = [];
-    }
-
-    draw() {
-        super.draw();           
-    }
-
-    hardResetNote() {
-        super.hardResetNote();
-        this.history = [];
-    }
-
-    basicResetNote() {
-        super.advancedResetNote();   // reloop 
-                                     // don't update the note
-    }
-
-    advancedResetNote() {
-        super.advancedResetNote();   // reloop 
-        this.updateNote(0);          // update the note
-    }
-
-    updateNote(note) {
-        this.note = note;
-
-        if (this.text === '') {
-            this.basicResetNote();
-        }
-
-        // more elegant way to do this:
-        let leftwords = slidyWindow.tracks.slice(0, this.i).map(track => track.text);
-        let rightwords = slidyWindow.tracks.slice(this.i + 1, slidyWindow.tracks.length).map(track => track.text);
-
-        getCreative(leftwords, rightwords, this.history).then(word => {
-            this.text = word;
-            this.history.push(word);
-            realization.update();
-        })
-    }
-
-    static doDrawTrackIndicator(color, bounds) {
-        fill(color);
-        let h = (bounds[3] - bounds[1]);
-
-        rect(
-            bounds[0] + h/4 * uiScaleState, 
-            bounds[1] + h/4, // * uiScaleState, 
-            bounds[0] + h * (1 - (1/4 * uiScaleState)),            
-            bounds[1] + h * 3/4, // (1 - (1/4 * uiScaleState)),
-        );
-    }
-}
-
-let trackCycle = [IndexTrack, AdjectiveTrack, NounTrack, VerbTrack, CreativeTrack];
+let trackCycle = [IndexTrack];
 function getNextTrackType(trackType) {
     return trackCycle[(trackCycle.indexOf(trackType) + 1) % trackCycle.length];
 }
@@ -822,7 +675,14 @@ function setup() {
     start = createVector(0, 0)
     frameRate(26);
 
-    sampleView = new SampleView(worder.corpus, [0, 0, width, height / 4]);
+    worder = new Worder();
+    Object.assign(worder, phraseWorderMixin);
+    worder.setCorpus(library["cutup"]);
+    Object.assign(worder, bertWorderMixin);
+    Object.assign(worder, llamaWorderMixin);
+    Object.assign(worder, phraseWorderMixin); // Add the mixin to the specific instance (order matters unf)
+
+    sampleView = new SampleView(worder, [0, 0, width, height / 4]);
     slidyWindow = new Multitrack([0, sampleView.loc[3], width, height / 4 + 200]);
     textLocation = [width - 100, slidyWindow.loc[3] + 200];
     maxTracksNum = (slidyWindow.loc[3] - slidyWindow.loc[1]) / slidyWindow.trackHeight;
@@ -891,6 +751,14 @@ function handleMIDIMessage(message) {
         }
     }
 
+    let noteData = {
+        note: note,
+        command: command,
+        velocity: velocity,
+        eventType: eventType,
+        source: message.source
+    }
+
     // info dump (for debugging, etc.)
     fill(0);
     textSize(10);
@@ -906,15 +774,10 @@ function handleMIDIMessage(message) {
     console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
 
     if (eventType === 9) { // Note on message
-        let x = s(range[0], range[1], 0, width, note);
-        let y = s(0, 127, 0, height, velocity);
-        y = height - y;
         fill(color[0], color[1], color[2]);
         updateColor();
 
-        // playSynth();
-
-        slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(note);
+        slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(noteData);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     }
     else if (eventType === 8) { // Note off message
@@ -985,7 +848,8 @@ function keyTyped() {
                 144,
                 index,
                 100
-            ]
+            ],
+            source: 'keyboard',
         });
         return false; // suppress default
     }
@@ -1042,6 +906,14 @@ function toggleDeform() {
     let button = document.getElementById("deformButton");
     button.className = doDeform ? "selected submit_button" : "submit_button";
 }
+toggleDeform(true);
+
+function getDeformPrompt() {
+    let topic_verb = "friendship"
+    let topic_noun = "nice"
+    let deformPrompt = ("This strange verse is about " + topic_noun + ". We need to edit it word by word to make it " + topic_verb +  " Poem:").split()
+    return deformPrompt;
+}
 
 async function deform() {
     if (!doDeform) {
@@ -1057,10 +929,10 @@ async function deform() {
     let before = currentContext.slice(0, index);
     let word = currentContext[index];
     let after = currentContext.slice(index + 1, currentContext.length);
-    let bertResponse = callBERT(before.map(w => w.word), after.map(w => w.word), []);
+    let bertResponse = callBERT(getDeformPrompt().concat(before.map(w => w.word)), after.map(w => w.word), []);
     let newWord = await bertResponse;
 
-    if (word.word === newWord) {
+    if (word.word === newWord || newWord === null) {
         return;
     }
 
@@ -1071,7 +943,7 @@ async function deform() {
     updatePerformanceWord(word);
 }
 // while doDeform is true, call it every 3 seconds
-// setInterval(deform, 3000);
+setInterval(deform, deformInterval);
 
 function draw() {
     // main draw call

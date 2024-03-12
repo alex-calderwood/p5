@@ -84,7 +84,7 @@
       }
 
       .userInput {
-        width: 50%; /* Make the button fill the available space */
+        width: 50%;
         height: 20%;
         margin: 0px;
         margin-bottom: 20px;
@@ -95,6 +95,10 @@
         padding: 10px;
         cursor: pointer; /* Change cursor on hover */
         text-align: center;
+      }
+
+      .settingLabel {
+        color: #fff;
       }
 
       ::-webkit-scrollbar { width: 8px; height: 3px;}
@@ -115,7 +119,8 @@
   <div class="options">
     <button class="submit_button" onclick="openPerformTab()">Perform</button>
     <button id="deformButton" class="submit_button" onclick="toggleDeform()">Deform</button>
-    <input value="5" class="userInput" id="deformRate"">
+    <input value="5" class="userInput" id="deformRate"" title="Deform Rate (s)">
+    <input value="5" class="userInput" id="minVelocity" onsubmit="updateMinVelocity()" title="Minimum Velocity">
   </div>
   <div id="textboxes">
     <div class="text" id="free">

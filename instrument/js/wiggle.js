@@ -5,6 +5,11 @@ let expectedOrigin = "https://localhost:8101"
 let deformInterval;
 let deformRate = 5000;
 
+const frameRateSetting = 26;
+let frames = 0;
+const llamaCoolDownSec = 0.5
+let lastLlamaCall = -1;
+
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
     "pataphysics": "pataphysics is the science of the realm beyond metaphysics… It will study the laws which govern exceptions and will explain the universe supplementary to this one; or, less ambitiously, it will describe a universe which one can see — must see perhaps — instead of the traditional one… Definition: pataphysics is the science of imaginary solutions, which symbolically attributes the properties of objects, described by their virtuality, to their lineaments (Jarry 1963: 131).",
@@ -24,8 +29,8 @@ function qwertyIndex(c) {
     return qwerty.indexOf(c);
 }
 
-// Create a new Worder instance
 let worder;
+let guitar;
 
 // populate the html with the corpus values by selecting the corpus textareas by their ids (corpus1, corpus2, corpus3)
 // and setting their values to the keys of the library
@@ -70,7 +75,7 @@ setGlobalGrammars(library["cutup"]);
 // USER SETTINGS
 const virtualMidiKeyboard = true;
 var userSpecifiedHeight = 250;
-let userSpecifiedNumTracks = 12;
+let userSpecifiedNumTracks = 16;
 const baseSpeed = 7;
 const maxSpeed = 20; // pixels / frame
 const shiftAmount = 35; // pixels
@@ -78,6 +83,8 @@ const visualDebug = false;
 let maxTextWidth = 40; // pixels
 
 let backgroundColor = (0, 0, 0);
+
+let prevMidiNote = -1;
 
 const keyboardMode = 'ableton';
 let knobRange;
@@ -329,6 +336,10 @@ class SampleView {
         let wordIndex = 0;
         for(let j = 0; j < this.loc[3] - this.loc[1]; j += this.ySpacing) {
             for (let i = 0; i < this.loc[2] - this.loc[0] - this.xSpacing; i += this.xSpacing) {
+                if (wordIndex >= this.sample.length) {
+                    break;
+                }
+
                 if (wordIndex == this.notePlayed) {
                     fill(255, 0, 0);
                 } else {
@@ -413,7 +424,7 @@ class Multitrack {
     }
 
     initTrack(i) {
-        let track = new IndexTrack(this.tracks.length, this.trackHeight, this.loc)
+        let track = new IndexTrack(i, this.trackHeight, this.loc)
         this.tracks.push(track);
     }
 
@@ -518,6 +529,7 @@ class Track {
     async updateNote(note) {
         this.note = note.note;
         this.basicResetNote();
+
         sampleView.updateNote(note);
 
         let words = worder.noteToWords(note);
@@ -525,7 +537,6 @@ class Track {
             words = await words;
         }
         this.text = words.map(w => w.word).join(' ')
-        console.log('track text', this.text)
 
         let lastWord;
         for (let word of words) {
@@ -534,15 +545,18 @@ class Track {
             lastWord = word;
         }
 
-        let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
-        let aiText = await promisedWord;
-        let prevID = lastWord.id;
-        for(let aiWord of aiText) {
-            aiWord.ai = true;
-            aiWord.after = prevID; // tell the performer to put it after the original word
-            performWord(aiWord);
-            worder.addWordToContext(aiWord);
-            prevID = aiWord.id;
+        if (frames - lastLlamaCall > frameRateSetting * llamaCoolDownSec) {
+            let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
+            let aiText = await promisedWord;
+            let prevID = lastWord.id;
+            for(let aiWord of aiText) {
+                aiWord.ai = true;
+                aiWord.after = prevID; // tell the performer to put it after the original word
+                performWord(aiWord);
+                worder.addWordToContext(aiWord);
+                prevID = aiWord.id;
+            }
+            lastLlamaCall = frames;
         }
 
         realization.update();
@@ -625,6 +639,7 @@ class Track {
         }
         this.constructor.doDrawTrackIndicator(this.mainColor, this.bounds);
 
+        
     }
 
     static doDrawTrackIndicator(color, bounds) {
@@ -672,7 +687,7 @@ function setup() {
 
     startX = width;
     start = createVector(0, 0)
-    frameRate(26);
+    frameRate(frameRateSetting);
 
     worder = new Worder();
     Object.assign(worder, phraseWorderMixin);
@@ -682,6 +697,7 @@ function setup() {
     Object.assign(worder, phraseWorderMixin); // Add the mixin to the specific instance (order matters unf)
 
     sampleView = new SampleView(worder, [0, 0, width, height / 4]);
+    // guitar = new GuitarTracker();e
     slidyWindow = new Multitrack([0, sampleView.loc[3], width, height / 4 + 200]);
     textLocation = [width - 100, slidyWindow.loc[3] + 200];
     maxTracksNum = (slidyWindow.loc[3] - slidyWindow.loc[1]) / slidyWindow.trackHeight;
@@ -721,8 +737,17 @@ function handleMIDIMessage(message) {
     const channelNumber = (message.data[0] & 0x0F) + 1; // channelNumber is 1 indexed in Ableton, so we are copying that here
     const eventType = message.data[0] >> 4;
 
+    let newNote = message.data[1] ? message.data[1] : 0;
+
+    // Hacky catch for too much incoming data from guitar
+    // console.log(newNote, prevMidiNote);
+    // if (prevMidiNote === newNote) {
+    //     return;
+    // }
+    // prevMidiNote = newNote;
+
     command = message.data[0]; // https://computermusicresource.com/MIDI.Commands.html
-    note = message.data[1] ? message.data[1] : 0;
+    note = newNote;
     velocity = (message.data.length > 2) ? message.data[2] : 0;
 
     // if the int channelIndex is not in the list of indices 'channels', return
@@ -733,6 +758,7 @@ function handleMIDIMessage(message) {
     if (command === 248 ) { // sync messages, don't want to display
         return;
     }
+
 
     if (channelNumber == 10) { // Update the grammar based on the text in the 4 input boxes
         let index;
@@ -750,14 +776,6 @@ function handleMIDIMessage(message) {
         }
     }
 
-    let noteData = {
-        note: note,
-        command: command,
-        velocity: velocity,
-        eventType: eventType,
-        source: message.source
-    }
-
     // info dump (for debugging, etc.)
     fill(0);
     textSize(10);
@@ -770,11 +788,21 @@ function handleMIDIMessage(message) {
     text('Velocity: ' + velocity,      textLocation[0], textLocation[1] + 20);
     text('Event: '    + eventType,     textLocation[0], textLocation[1] + 40);
 
-    console.log("Channel", channelNumber, "Command", command, "Note", note, "Velocity", velocity, "Event", eventType)
 
     if (eventType === 9) { // Note on message
         fill(color[0], color[1], color[2]);
         updateColor();
+
+        let noteData = {
+            note: note,
+            channel: channelNumber, 
+            command: command,
+            velocity: velocity,
+            eventType: eventType,
+            source: message.source ? message.source : 'midi'
+        }
+
+        console.log("Note", noteData)
 
         slidyWindow.tracks[slidyWindow.selectedTrack].updateNote(noteData);
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
@@ -813,6 +841,7 @@ function handleMIDIMessage(message) {
     } else if (eventType == 14) {
         
     }
+
 }
 
 function updateColor() {
@@ -897,9 +926,9 @@ function reset() {
 
 
 function getDeformPrompt() {
-    let topic_verb = "friendship"
-    let topic_noun = "nice"
-    let deformPrompt = ("This strange verse is about " + topic_noun + ". We need to edit it word by word to make it " + topic_verb +  " Poem:").split()
+    let topicVerb = "friendship"
+    let topicNoun = "nice"
+    let deformPrompt = ("This strange verse is about " + topicNoun + ". We need to edit it word by word to make it " + topicVerb +  " Poem:").split()
     return deformPrompt;
 }
 
@@ -932,7 +961,7 @@ async function deform() {
     let bertResponse = callBERT(getDeformPrompt().concat(before.map(w => w.word)), after.map(w => w.word), []);
     let newWord = await bertResponse;
 
-    if (word.word === newWord || newWord === null) {
+    if (word.word === newWord || newWord == null) {
         return;
     }
 
@@ -956,10 +985,17 @@ function toggleDeform() {
 }
 toggleDeform();
 
+let minVelocity = 0;
+function updateMinVelocity() {
+    minVelocity = document.getElementById("minVelocity").value;
+    console.log("min velocity set to ", minVelocity);
+}
+updateMinVelocity();
 
 
+
+// main draw call
 function draw() {
-    // main draw call
     realization.draw();
     sampleView.draw();
     slidyWindow.draw();
@@ -979,29 +1015,31 @@ function draw() {
     // uiScaleState = Math.sin(uiScaleStateTracker * Math.PI / 2);
     // fancy 3
     uiScaleState = Math.pow(Math.sin(uiScaleStateTracker * Math.PI / 2), 2);
+
+    frames++;
 }
 
-function mousePressed() {
-    if (slidyWindow) {
-        //get the track that was clicked on
-        let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
-        let track = slidyWindow.tracks[trackIndex];
+// function mousePressed() {
+//     if (slidyWindow) {
+//         //get the track that was clicked on
+//         let trackIndex = Math.floor(mouseY / slidyWindow.trackHeight);
+//         let track = slidyWindow.tracks[trackIndex];
 
-        if (track) {
-            // if the shift button is being held
-            if (keyIsDown(SHIFT)) {
-                track.setIsAdvanced(!track.isAdvanced);
-            } else {
-                // change the type of this to be the other type
-                let nextTrackType = getNextTrackType(track.constructor);
-                let newTrack =  new nextTrackType(track.i, track.trackHeight);
-                newTrack.text = track.text;
-                newTrack.position = track.position;
-                newTrack.speed = track.speed;
-                newTrack.setIsAdvanced(track.isAdvanced);
-                newTrack.selected = track.selected;
-                slidyWindow.tracks[track.i] = newTrack;
-            }
-        }
-    }
-}
+//         if (track) {
+//             // if the shift button is being held
+//             if (keyIsDown(SHIFT)) {
+//                 track.setIsAdvanced(!track.isAdvanced);
+//             } else {
+//                 // change the type of this to be the other type
+//                 let nextTrackType = getNextTrackType(track.constructor);
+//                 let newTrack =  new nextTrackType(track.i, track.trackHeight);
+//                 newTrack.text = track.text;
+//                 newTrack.position = track.position;
+//                 newTrack.speed = track.speed;
+//                 newTrack.setIsAdvanced(track.isAdvanced);
+//                 newTrack.selected = track.selected;
+//                 slidyWindow.tracks[track.i] = newTrack;
+//             }
+//         }
+//     }
+// }

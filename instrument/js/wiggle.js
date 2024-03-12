@@ -9,6 +9,7 @@ const frameRateSetting = 26;
 let frames = 0;
 const llamaCoolDownSec = 0.5
 let lastLlamaCall = -1;
+let lastLlamaWordID = null;
 
 let library = {
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
@@ -224,11 +225,13 @@ function performWord(word) {
     realization.update();
 }
 
-function updatePerformanceWord(word) {
+function updatePerformanceWord(id, word) {
+    console.log("calling post", id, word);
     if (performance) {
          performance.postMessage({data:
             {
                 type: "updateWord",
+                id: id,
                 word: word,
             }
         }, "*")
@@ -545,6 +548,23 @@ class Track {
             lastWord = word;
         }
 
+        if (lastLlamaWordID) {
+            let index = worder.wordOrder.indexOf(lastLlamaWordID);
+            const leftIDs = worder.wordOrder.slice(index - bertContextLength, index);
+            const rightIDs = worder.wordOrder.slice(index + 1, index + bertContextLength + 1);
+
+            let left = leftIDs.map(id => worder.words[id].word);
+            let right = rightIDs.map(id => worder.words[id].word);
+
+            let newword = callBERT(left, right, []);
+            newword = await newword;
+            newword = worder.formatWord(newword);
+            newword.deform = true;
+
+            worder.updateWord(lastLlamaWordID, newword);
+            updatePerformanceWord(lastLlamaWordID, newword);
+        }
+
         if (frames - lastLlamaCall > frameRateSetting * llamaCoolDownSec) {
             let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
             let aiText = await promisedWord;
@@ -555,9 +575,11 @@ class Track {
                 performWord(aiWord);
                 worder.addWordToContext(aiWord);
                 prevID = aiWord.id;
+                lastLlamaWordID = aiWord.id;
             }
             lastLlamaCall = frames;
         }
+
 
         realization.update();
     }
@@ -969,7 +991,7 @@ async function deform() {
     word.ai = false;
     word.deform = true;
     worder.words[word.id] = word;
-    updatePerformanceWord(word);
+    updatePerformanceWord(word.id, word);
 }
 
 let doDeform = false;

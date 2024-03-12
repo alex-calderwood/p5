@@ -65,6 +65,8 @@ class TextPerformer {
     }
 
     updateWord(id, word) {
+        console.log("updating word 2", id, word);
+        word.id = id;
         word = this.addPerformanceData(word);
         this.words[id] = word;
     }
@@ -94,7 +96,9 @@ class TextPerformer {
     addPerformanceData(word) {
         let size = this.lineHeight;
         textSize(size);
-        let wordWidth = textWidth(word.word);
+
+        
+        let wordWidth = word.word.length === 0 ? 0 : textWidth(word.word);
         
         let wordColor = textColor;
         if (word.ai) {
@@ -134,8 +138,8 @@ window.addEventListener("message", (event) => {
     }
 
     if (data && data.type === "updateWord") {
-        console.log("updating word", data.word);
-        performer.updateWord(data.word.id, data.word);
+        console.log("updating word", data.id, data.word);
+        performer.updateWord(data.id, data.word);
     }
 });
 

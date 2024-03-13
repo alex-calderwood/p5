@@ -8,7 +8,7 @@ let deformRate = 5000;
 const frameRateSetting = 26;
 let frames = 0;
 const llamaCoolDownSec = 0.5
-let lastLlamaCallFrame = -1;
+let lastLlamaCall = -1;
 let lastLlamaWordID = null;
 
 let library = {
@@ -353,6 +353,37 @@ class SampleView {
             }
         }
     }
+    
+//     let currentX = 0;
+//     let currentY = 0;
+
+// // for (let wordID of this.wordOrder) {
+//     for (let i = 0; i < this.sample.length; i++) {
+//         let word = this.words[wordID];
+//         textSize(word.size);
+//         let wordWidth = textWidth(word.word);
+
+//         if (currentX + wordWidth > windowWidth) {
+//             currentX = 0;
+//             currentY += this.lineHeight;
+//         }
+//         if (currentY + word.size > windowHeight) {
+//             background(0);
+//             currentX = 0;
+//             currentY = 0;
+//         }
+
+//         word.x = currentX;
+//         word.y = currentY;
+
+//         fill(word.backgroundColor[0], word.backgroundColor[1], word.backgroundColor[2]); // set the color to the word's background color
+//         rect(word.x, word.y, word.x + word.wordWidth, word.y + word.size); // draw the background
+//         fill(word.color[0], word.color[1], word.color[2]); // set the color to the word's color
+//         text(word.word, word.x, word.y + word.size); // draw the word
+
+//         currentX += word.width + textWidth(" ");
+//         }    
+//     }
 }
 
 
@@ -518,11 +549,9 @@ class Track {
         }
 
         if (lastLlamaWordID) {
-            let lastAIIndex = worder.wordOrder.indexOf(lastLlamaWordID);
-            const leftIDs = worder.wordOrder.slice(lastAIIndex - bertContextLength, lastAIIndex + 1);
-            const rightIDs = worder.wordOrder.slice(lastAIIndex + 1, lastAIIndex + bertContextLength);
-
-            console.log("wordOrder", worder.wordOrder, "lastAIIndex", lastAIIndex, "left", leftIDs, "right", rightIDs)
+            let index = worder.wordOrder.indexOf(lastLlamaWordID);
+            const leftIDs = worder.wordOrder.slice(index - bertContextLength, index);
+            const rightIDs = worder.wordOrder.slice(index + 1, index + bertContextLength + 1);
 
             let left = leftIDs.map(id => worder.words[id].word);
             let right = rightIDs.map(id => worder.words[id].word);
@@ -531,30 +560,24 @@ class Track {
             newword = await newword;
             newword = worder.formatWord(newword);
             newword.deform = true;
-            newword.after = lastLlamaWordID;
 
-            worder.addWordToContext(newword);
-            performWord(newword);
+            worder.updateWord(lastLlamaWordID, newword);
+            updatePerformanceWord(lastLlamaWordID, newword);
         }
 
-        if (frames - lastLlamaCallFrame > frameRateSetting * llamaCoolDownSec) {
+        if (frames - lastLlamaCall > frameRateSetting * llamaCoolDownSec) {
             let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
             let aiText = await promisedWord;
-            lastLlamaCallFrame = frames;
-            if (aiText.length == 0) {
-                lastLlamaWordID = null;
-            } else {
-                let prevID = lastWord.id;
-                for(let aiWord of aiText) {
-                    aiWord.ai = true;
-                    aiWord.after = prevID; // tell the performer to put it after the original word
-                    performWord(aiWord);
-                    worder.addWordToContext(aiWord);
-                    prevID = aiWord.id;
-                    lastLlamaWordID = aiWord.id;
-                    console.log("lastLlamaWordID", lastLlamaWordID, aiWord);
-                }
+            let prevID = lastWord.id;
+            for(let aiWord of aiText) {
+                aiWord.ai = true;
+                aiWord.after = prevID; // tell the performer to put it after the original word
+                performWord(aiWord);
+                worder.addWordToContext(aiWord);
+                prevID = aiWord.id;
+                lastLlamaWordID = aiWord.id;
             }
+            lastLlamaCall = frames;
         }
 
 
@@ -927,8 +950,8 @@ function reset() {
 function getDeformPrompt() {
     let topicVerb = "friendship"
     let topicNoun = "nice"
-    let deformPrompt = "This strange verse is about " + topicNoun + ". We need to edit it word by word to make it " + topicVerb +  " Poem:";
-    return deformPrompt.split(' ');
+    let deformPrompt = ("This strange verse is about " + topicNoun + ". We need to edit it word by word to make it " + topicVerb +  " Poem:").split()
+    return deformPrompt;
 }
 
 async function deform() {

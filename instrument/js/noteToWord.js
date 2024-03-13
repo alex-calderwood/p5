@@ -38,6 +38,7 @@ function callBERT(leftwords, rightwords, badwords) {
             }
             word = word.toUpperCase();
             word = word.replace("##", "") // Eventually we may want to concat these
+            console.log("Calling BERT", 'left', leftwords, 'right', rightwords, 'result', word);
             return word;
         })
     } catch (error) {
@@ -80,6 +81,8 @@ class Worder {
     }
 
     addWordToContext(word) {
+        word = Object.assign({}, word);
+        console.log("adding word", word);
         this.words[word.id] = word;
         if (word.after) {
             let index = this.wordOrder.indexOf(word.after);

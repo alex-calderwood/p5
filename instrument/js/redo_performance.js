@@ -72,7 +72,6 @@ class TextPerformer {
     }
 
     addWord(word) {
-        console.log("adding word", word);
         let id = word.id;
         word = this.addPerformanceData(word);
         this.words[id] = word;
@@ -134,6 +133,7 @@ window.addEventListener("message", (event) => {
     let data = event.data.data;
     if (data && data.type === "addWord") {
         let newWords = performer.addWord(data.word);
+        console.log("posting", {data: {type: "addWordResponse", words: newWords, status: "success"}})
         window.opener.postMessage({data: {type: "addWordResponse", words: newWords, status: "success"}}, "*");
     }
 

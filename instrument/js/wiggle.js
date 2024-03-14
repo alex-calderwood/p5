@@ -9,7 +9,7 @@ const frameRateSetting = 26;
 let frames = 0;
 const llamaCoolDownSec = 0.5
 let lastLlamaCallFrame = -1;
-let lastLlamaWordID = null;
+let wordsAwaitingResponse = [];
 
 let library = {
     "finesse": "the first point is permenence spring boards fixedly eminate bounciness in the middle is turmoil and the end is not predicted without finesse so the diver eyes closed presents that moment encased she longs to suspend ",
@@ -284,6 +284,7 @@ window.addEventListener("message", (event) => {
 });
 
 
+
 // TODO we don't want this anymore?
 class Corpus {
       updateCorpus(n) {
@@ -548,46 +549,12 @@ class Track {
             lastWord = word;
         }
 
-        if (frames - lastLlamaCallFrame > frameRateSetting * llamaCoolDownSec) {
-            let promisedWords = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
-            let aiWords = await promisedWords;
-            lastLlamaCallFrame = frames;
-            if (aiWords.length == 0) {
-                lastLlamaWordID = null;
-            } else {
-                let prevID = lastWord.id;
-                for(let aiWord of aiWords) {
-                    aiWord.ai = true;
-                    aiWord.after = prevID; // tell the performer to put it after the original word
-                    performWord(aiWord);
-                    worder.addWordToContext(aiWord);
-                    prevID = aiWord.id;
-                    lastLlamaWordID = aiWord.id;
-                    console.log("lastLlamaWordID", lastLlamaWordID, aiWord);
-                }
-            }
-        }
+        await bertInfill(0);
 
-        if (lastLlamaWordID) {
-            let addAfter = lastLlamaWordID;
-            let lastAIIndex = worder.wordOrder.indexOf(addAfter);
-            const leftIDs = worder.wordOrder.slice(lastAIIndex - bertContextLength, lastAIIndex + 1);
-            const rightIDs = worder.wordOrder.slice(lastAIIndex + 1, lastAIIndex + bertContextLength);
+        await spewLlama(note, lastWord);
 
-            console.log("wordOrder", worder.wordOrder, "lastAIIndex", lastAIIndex, "left", leftIDs, "right", rightIDs)
+        await bertInfill(1);
 
-            let left = leftIDs.map(id => worder.words[id].word);
-            let right = rightIDs.map(id => worder.words[id].word);
-            let newword = callBERT(getDeformPrompt().concat(left), right, []);
-            newword = await newword;
-            newword = worder.formatWord(newword);
-            newword.deform = true;
-            newword.after = addAfter;
-
-            worder.addWordToContext(newword);
-            performWord(newword);
-            lastLlamaWordID = null;
-        }
 
         realization.update();
     }
@@ -689,6 +656,33 @@ class IndexTrack extends Track {
 }
 
 let trackCycle = [IndexTrack];
+
+async function spewLlama(note, lastWord) {
+    let lastGeneratedWord = null;
+    if (frames - lastLlamaCallFrame > frameRateSetting * llamaCoolDownSec) {
+        let aiWords = await worder.noteToWordsByLlama(note); // worder.noteToWordsByLlama(note);
+        lastLlamaCallFrame = frames;
+        if (aiWords.length == 0) {
+            lastGeneratedWord = null;
+        } else {
+            let prevID = lastWord.id;
+            for (let aiWord of aiWords) {
+                aiWord.ai = true;
+                aiWord.after = prevID; // tell the performer to put it after the original word
+                performWord(aiWord);
+                worder.addWordToContext(aiWord);
+                prevID = aiWord.id;
+                lastGeneratedWord = aiWord.id;
+                console.log("llama", aiWord);
+            }
+        }
+    }
+
+    if (lastGeneratedWord) {
+        wordsAwaitingResponse.push(lastGeneratedWord);
+    }
+}
+
 function getNextTrackType(trackType) {
     return trackCycle[(trackCycle.indexOf(trackType) + 1) % trackCycle.length];
 }
@@ -738,6 +732,28 @@ function setup() {
     knobs.draw();
 
     openPerformTab();
+}
+
+async function bertInfill(fillTo = 0) {
+    while (wordsAwaitingResponse.length > fillTo) {
+        let addAfter = wordsAwaitingResponse.shift();
+        let lastAIIndex = worder.wordOrder.indexOf(addAfter);
+        const leftIDs = worder.wordOrder.slice(lastAIIndex - bertContextLength, lastAIIndex + 1);
+        const rightIDs = worder.wordOrder.slice(lastAIIndex + 1, lastAIIndex + bertContextLength);
+
+        console.log("wordOrder", worder.wordOrder, "lastAIIndex", lastAIIndex, "left", leftIDs, "right", rightIDs);
+
+        let left = leftIDs.map(id => worder.words[id].word);
+        let right = rightIDs.map(id => worder.words[id].word);
+        let newword = await callBERT(getMergePrompt().concat(left), right, []);
+        if (newword != '' && newword != ' ' && newword != null) {
+            newword = worder.formatWord(newword);
+            newword.merge = true;
+            newword.after = addAfter;
+            performWord(newword);
+            worder.addWordToContext(newword);
+        }
+    }
 }
 
 function onMIDISuccess(midi) {
@@ -968,7 +984,7 @@ function preload() {
 
 function refresh() {
     lastLlamaCallFrame = frames;
-    lastLlamaWordID = null;
+    wordsAwaitingResponse = [];
 
     slidyWindow.reset();
     worder.reset();
@@ -978,11 +994,19 @@ function refresh() {
 }
 
 function getDeformPrompt() {
-    let topicVerb = "friendship"
-    let topicNoun = "nice"
+    let topicVerb = "complex friendship"
+    let topicNoun = "resounding"
     let deformPrompt = "This strange verse is about " + topicNoun + ". We need to edit it word by word to make it " + topicVerb +  " Poem:";
     return deformPrompt.split(' ');
 }
+
+function getMergePrompt() {
+    let topicVerb = "simple loving frienship"
+    let topicNoun = "beautiful"
+    let deformPrompt = "This strange verse is about " + topicNoun + ". We need to edit it word by word to make it " + topicVerb +  " Poem:";
+    return deformPrompt.split(' ');
+}
+
 
 async function deform() {
     if (!doDeform) {
@@ -1013,7 +1037,7 @@ async function deform() {
     let bertResponse = callBERT(getDeformPrompt().concat(before.map(w => w.word)), after.map(w => w.word), []);
     let newWord = await bertResponse;
 
-    if (word.word === newWord || newWord == null) {
+    if (word.word === newWord || newWord == null || newWord == '' || newWord == ' ') {
         return;
     }
 

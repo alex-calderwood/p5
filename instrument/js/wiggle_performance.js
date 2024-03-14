@@ -6,6 +6,7 @@ const userSpecLineHeight = 35
 
 const aiColor = [191, 0, 0];
 const deformColor = [97, 137, 133];
+const mergeColor = [134, 22, 87];
 
 function setup() {
     noStroke();
@@ -106,6 +107,8 @@ class TextPerformer {
             wordColor = aiColor;
         } else if (word.deform) {
             wordColor = deformColor;
+        } else if (word.merge) {
+            wordColor = mergeColor;
         }
 
         return {...word, ...{

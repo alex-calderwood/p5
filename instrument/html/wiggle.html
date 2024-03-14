@@ -120,7 +120,9 @@
     <button class="submit_button" onclick="openPerformTab()">Perform</button>
     <button id="deformButton" class="submit_button" onclick="toggleDeform()">Deform</button>
     <input value="5" class="userInput" id="deformRate"" title="Deform Rate (s)">
-    <input value="5" class="userInput" id="minVelocity" onsubmit="updateMinVelocity()" title="Minimum Velocity">
+    <input value="10" class="userInput" id="minVelocity" title="Minimum Velocity">
+    <button class="submit_button" onclick="updateMinVelocity()">Velocity</button>
+    <button class="submit_button" onclick="refresh()">Reset</button>
   </div>
   <div id="textboxes">
     <div class="text" id="free">

@@ -12,7 +12,11 @@ let lastLlamaCallFrame = -1;
 let lastLlamaWordID = null;
 
 let library = {
+    "finesse": "the first point is permenence spring boards fixedly eminate bounciness in the middle is turmoil and the end is not predicted without finesse so the diver eyes closed presents that moment encased she longs to suspend ",
+    "markov": "If you'd like to simulate a Markov chains were invented by Henry Ford the industrialist Andrew Carnegie of Carnegie Steel wool spooled is cloth made of wool? Enjambments proliferate and then they've killed me mother they've killed me. A rainy day in May showers bring daffodils and lilac purple haze, green haze like Proofrock talking of Michelangelo's David and Goliath construction machines, machines thin threading through the crowd automatons mindless actors on a stage, out, out, out, out, out, out, ou <EOF> If the cogs like daisies, daisies and rain-whispers in the dark chocolate and orange-peel zest; the spice capsaicin-based or natural functions of x and y, real-valued imitation understand is imitation is replication of understanding is indication of some higher mind. Crank the gear up and everything is going to be a good day. She'll be fine.",
+    "ensemble": "all and then the other it is a new word of all words with no clear sense at all if you can read your strategy now move could everyone else have heard this place of color? tasting sounds processes derangination act accordingly kinesthetic FACTORATIC, subject shift behavior gain maintain strategy games tea tasting producing cutting scissors processing \"SYSTEMATIC COLLANGEPOETRY.\" assume variation entirely determined explicitly excused vowedic prose rearranging sand streets smells to streets to smells if you posed entirely in ink elastic introduce dimension -discoveries overheard discoveries overheard in rings render formsels neumanement process prosthetisch halluciborg ironic",
     "cutup":  "ALL WRITING IS IN FACT CUT UPS OF GAMES AND ECONOMIC BEHAVIOR OVERHEARD? WHAT ELSE? ASSUME THAT THE WORST HAS HAPPENED EXPLICIT AND SUBJECT TO STRATEGY IS AT SOME POINT CLASSICAL PROSE. CUTTING AND REARRANGING FACTOR YOUR OPPONENT WILL GAIN INTRODUCES A NEW DIMENSION YOUR STRATEGY. HOW MANY DISCOVERIES SOUND TO KINESTHETIC? WE CAN NOW PRODUCE ACCIDENT TO HIS COLOR OF VOWELS. AND NEW DIMENSION TO FILMS CUT THE SENSES. THE PLACE OF SAND. GAMBLING SCENES ALL TIMES COLORS TASTING SOUNDS SMELL STREETS OF THE WORLD. WHEN YOU CAN HAVE THE BET ALL: \"POETRY IS FOR EVERYONE\" DOCTOR NEUMAN IN A COLLAGE OF WORDS READ HEARD INTRODUCED THE CUT UP SCISSORS RENDERS THE PROCESS GAME AND MILITARY STRATEGY, VARIATION CLEAR AND ACT ACCORDINGLY. IF YOU POSED ENTIRELY OF REARRANGED CUT DETERMINED BY RANDOM A PAGE OF WRITTEN WORDS NO ADVANTAGE FROM KNOWING INTO WRITER PREDICT THE MOVE. THE CUT VARIATION IMAGES SHIFT SENSE ADVANTAGE IN PROCESSING TO SOUND SIGHT TO SOUND. HAVE BEEN MADE BY ACCIDENT IS WHERE RIMBAUD WAS GOING WITH ORDER THE CUT UPS COULD \"SYSTEMATIC DERANGEMENT\" OF THE GAMBLING SCENE IN WITH A TEA HALLUCINATION: SEEING AND PLACES. CUT BACK. CUT FORMS. REARRANGE THE WORD AND IMAGE TO OTHER FIELDS THAN WRITING.",
+    "nonsense": "the nonsense spouts require riddled sieves ten thousand bowls of plain grey oatmeal ride the rolling plains and bid you reach the cloud harbors rise aquaria and anniverse in aged organs having once remembered the velvet curtain flow like babbling streams fresh current through throats of defiance one voice plain: \"we live!\" discourse combined to bilderspeech mystic lustration reminding each part to individuate reliance to actuate the sky harps for rust to do the smoothing that young poets never could in a million separate beams each vows a cut up trove to leave their children each climbs the ladder to the wordless sky to rain that which cannot be expressed from eubilia and resofactance to residuaditae aloft",
     "pataphysics": "pataphysics is the science of the realm beyond metaphysics… It will study the laws which govern exceptions and will explain the universe supplementary to this one; or, less ambitiously, it will describe a universe which one can see — must see perhaps — instead of the traditional one… Definition: pataphysics is the science of imaginary solutions, which symbolically attributes the properties of objects, described by their virtuality, to their lineaments (Jarry 1963: 131).",
     // https://dbanach.com/enneads/enneads-study2.htm
     "deconstruction": "Certainly, Derrida’s style is not traditional. In the same speech from 1980 at the time of him being awarded a doctorate, Derrida tells us that, in the Seventies, he devoted himself to developing a style of writing. The most clearest example is his 1974 Glas (“Death Knell” would be an approximate English translation; the current English translation simply uses the word “glas”); here Derrida writes in two columns, with the left devoted to a reading of Hegel and the right devoted to a reading of the French novelist-playwright Jean Genet. Another example would be his 1980 Postcard from Socrates to Freud and Beyond; the opening two hundred pages of this book consist of love letters addressed to no one in particular. It seems that sometime around this time (1980), Derrida reverted back to the more linear and somewhat argumentative style, the very style that defined his texts from the Sixties. He never however renounced a kind of evocation, a calling forth that truly defines deconstruction. Derrida takes the idea of a call from Heidegger. Starting in 1968 with “The Ends of Man,” Derrida devoted a number of texts to Heidegger’s thought. But, it is really with the 1978 publication of The Truth in Painting, and then throughout the 1980s, that Derrida intensified his reading of Heidegger. In particular, he wrote a series of essays on the question of sex or race in Heidegger (“Geschlecht I–IV”). While frequently critical, these essays often provide new insights into Heidegger’s thought. The culminating essay in Derrida’s series on Heidegger is his 1992 Aporias.",
@@ -35,16 +39,21 @@ let guitar;
 
 // populate the html with the corpus values by selecting the corpus textareas by their ids (corpus1, corpus2, corpus3)
 // and setting their values to the keys of the library
-for (let i = 1; i <= 3; i++) {
-    let corpusTextArea = document.getElementById("corpus" + i);
-    if (i == 1) {
-        corpusTextArea.value = Object.values(library)[0].toUpperCase();
-    }
-    else {
-        let randomIndex = Math.floor(Math.random() * Object.values(library).length);
-        corpusTextArea.value = Object.values(library)[randomIndex].toUpperCase();
-    }
-}
+// for (let i = 1; i <= 3; i++) {
+//     let corpusTextArea = document.getElementById("corpus" + i);
+//     if (i == 1) {
+//         corpusTextArea.value = Object.values(library)[0].toUpperCase();
+//     }
+//     else {
+//         let randomIndex = Math.floor(Math.random() * Object.values(library).length);
+//         corpusTextArea.value = Object.values(library)[randomIndex].toUpperCase();
+//     }
+// }
+document.getElementById("corpus1").value = library["finesse"].toUpperCase();
+document.getElementById("corpus2").value = library["markov"].toUpperCase();
+document.getElementById("corpus3").value = library["ensemble"].toUpperCase();
+document.getElementById("corpus4").value = library["nonsense"].toUpperCase();
+
 
 function parseText(text) {
     let doc = nlp(text);
@@ -238,6 +247,28 @@ function updatePerformanceWord(id, word) {
     }
 }
 
+function deletePerformanceWord(id) {
+    if (performance) {
+         performance.postMessage({data:
+            {
+                type: "deleteWord",
+                id: id,
+            }
+        }, "*")
+    }
+}
+
+function refreshPerformance() {
+    if (performance) {
+        performance.postMessage({data:
+            {
+                type: "refresh",
+            }
+        }, "*")
+    }
+}
+
+
 window.addEventListener("message", (event) => {
     // Always validate the origin of the message!
     if (event.origin !== expectedOrigin) {
@@ -257,7 +288,7 @@ window.addEventListener("message", (event) => {
 class Corpus {
       updateCorpus(n) {
         // get the value of corpus<n> from the html
-        let corpusValue = document.getElementById("corpus" + n).value;
+        let corpusValue = document.getElementById("corpus" + n).value.toUpperCase();
         setGlobalGrammars(corpusValue);
         worder.setCorpus(corpusValue);
         sampleView.updateWorder(worder);
@@ -517,35 +548,15 @@ class Track {
             lastWord = word;
         }
 
-        if (lastLlamaWordID) {
-            let lastAIIndex = worder.wordOrder.indexOf(lastLlamaWordID);
-            const leftIDs = worder.wordOrder.slice(lastAIIndex - bertContextLength, lastAIIndex + 1);
-            const rightIDs = worder.wordOrder.slice(lastAIIndex + 1, lastAIIndex + bertContextLength);
-
-            console.log("wordOrder", worder.wordOrder, "lastAIIndex", lastAIIndex, "left", leftIDs, "right", rightIDs)
-
-            let left = leftIDs.map(id => worder.words[id].word);
-            let right = rightIDs.map(id => worder.words[id].word);
-
-            let newword = callBERT(left, right, []);
-            newword = await newword;
-            newword = worder.formatWord(newword);
-            newword.deform = true;
-            newword.after = lastLlamaWordID;
-
-            worder.addWordToContext(newword);
-            performWord(newword);
-        }
-
         if (frames - lastLlamaCallFrame > frameRateSetting * llamaCoolDownSec) {
-            let promisedWord = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
-            let aiText = await promisedWord;
+            let promisedWords = worder.noteToWordsByLlama(note) // worder.noteToWordsByLlama(note);
+            let aiWords = await promisedWords;
             lastLlamaCallFrame = frames;
-            if (aiText.length == 0) {
+            if (aiWords.length == 0) {
                 lastLlamaWordID = null;
             } else {
                 let prevID = lastWord.id;
-                for(let aiWord of aiText) {
+                for(let aiWord of aiWords) {
                     aiWord.ai = true;
                     aiWord.after = prevID; // tell the performer to put it after the original word
                     performWord(aiWord);
@@ -557,6 +568,26 @@ class Track {
             }
         }
 
+        if (lastLlamaWordID) {
+            let addAfter = lastLlamaWordID;
+            let lastAIIndex = worder.wordOrder.indexOf(addAfter);
+            const leftIDs = worder.wordOrder.slice(lastAIIndex - bertContextLength, lastAIIndex + 1);
+            const rightIDs = worder.wordOrder.slice(lastAIIndex + 1, lastAIIndex + bertContextLength);
+
+            console.log("wordOrder", worder.wordOrder, "lastAIIndex", lastAIIndex, "left", leftIDs, "right", rightIDs)
+
+            let left = leftIDs.map(id => worder.words[id].word);
+            let right = rightIDs.map(id => worder.words[id].word);
+            let newword = callBERT(getDeformPrompt().concat(left), right, []);
+            newword = await newword;
+            newword = worder.formatWord(newword);
+            newword.deform = true;
+            newword.after = addAfter;
+
+            worder.addWordToContext(newword);
+            performWord(newword);
+            lastLlamaWordID = null;
+        }
 
         realization.update();
     }
@@ -577,11 +608,13 @@ class Track {
     }
 
     basicResetNote() {
-        this.doBasicResetNote();
+        // this.doBasicResetNote();
+        this.hardResetNote();
     }
 
     advancedResetNote() {
-        this.doBasicResetNote();
+        // this.doBasicResetNote();
+        this.hardResetNote();
     }
 
     draw() {
@@ -698,7 +731,7 @@ function setup() {
     sampleView = new SampleView(worder, [0, 0, width, height / 4]);
     // guitar = new GuitarTracker();e
     slidyWindow = new Multitrack([0, sampleView.loc[3], width, height / 4 + 200]);
-    textLocation = [width - 100, slidyWindow.loc[3] + 200];
+    textLocation = [width - 100, height - 220];
     maxTracksNum = (slidyWindow.loc[3] - slidyWindow.loc[1]) / slidyWindow.trackHeight;
 
     knobs = new Knobs();
@@ -789,6 +822,11 @@ function handleMIDIMessage(message) {
 
 
     if (eventType === 9) { // Note on message
+
+        if (velocity < minVelocity) {
+            return;
+        }
+
         fill(color[0], color[1], color[2]);
         updateColor();
 
@@ -807,7 +845,7 @@ function handleMIDIMessage(message) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     
         // Add a new line
-        if (worder.curLineLength() > 5) {
+        if (worder.curLineLength() > 3) {
             addLineBreak()
         }
     }
@@ -890,7 +928,9 @@ function keyTyped() {
 function keyPressed() {
     if (keyCode === ENTER) {
         addLineBreak();
-    } else if (keyCode === DOWN_ARROW) {
+    } else if (keyCode == BACKSPACE) {
+        deleteLastWord();
+    }else if (keyCode === DOWN_ARROW) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     } else if (keyCode === UP_ARROW) {
         slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex - 1, slidyWindow.knobOffset);
@@ -898,13 +938,14 @@ function keyPressed() {
         slidyWindow.moveWord(slidyWindow.selectedTrack, -shiftAmount);
     } else if (keyCode === RIGHT_ARROW) {
         slidyWindow.moveWord(slidyWindow.selectedTrack, shiftAmount);
-    } else if (keyCode === 8) { // delete
-        slidyWindow.tracks[slidyWindow.selectedTrack].hardResetNote();
-        slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
     } 
+    // else if (keyCode === 8) { // delete
+    //     slidyWindow.tracks[slidyWindow.selectedTrack].hardResetNote();
+    //     slidyWindow.updateSelectedTrack(slidyWindow.selectedTrackBaseIndex + 1, slidyWindow.knobOffset);
+    // } 
     else if (keyCode === 32) { // spacebar
         // want to pause?   
-    }
+    } 
 }
 
 function addLineBreak() {
@@ -913,16 +954,28 @@ function addLineBreak() {
     worder.addWordToContext(word);
 }
 
+function deleteLastWord() {
+    let lastWord = worder.words[worder.wordOrder[worder.wordOrder.length - 1]];
+    if (lastWord) {
+        worder.deleteWord(lastWord.id);
+        deletePerformanceWord(lastWord.id);
+    }
+}
 
 function preload() {
     // pass
 }
 
-function reset() {
-    background(40);
-    slidyWindow.reset();
-}
+function refresh() {
+    lastLlamaCallFrame = frames;
+    lastLlamaWordID = null;
 
+    slidyWindow.reset();
+    worder.reset();
+    realization.realization = [];
+    realization.update();
+    refreshPerformance();
+}
 
 function getDeformPrompt() {
     let topicVerb = "friendship"
@@ -987,10 +1040,10 @@ toggleDeform();
 let minVelocity = 0;
 function updateMinVelocity() {
     minVelocity = document.getElementById("minVelocity").value;
+    minVelocity = parseInt(minVelocity);
     console.log("min velocity set to ", minVelocity);
 }
 updateMinVelocity();
-
 
 
 // main draw call

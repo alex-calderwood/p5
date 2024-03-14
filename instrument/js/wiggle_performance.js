@@ -2,10 +2,10 @@ const expectedOrigin = "https://localhost:8101"
 
 let textColor = [255, 255, 255];
 let backgroundColor = [0, 0, 0];
-const userSpecLineHeight = 40
+const userSpecLineHeight = 35
 
-const aiColor = [200, 0, 0];
-const deformColor = [0, 0, 200];
+const aiColor = [191, 0, 0];
+const deformColor = [97, 137, 133];
 
 function setup() {
     noStroke();
@@ -65,7 +65,7 @@ class TextPerformer {
     }
 
     updateWord(id, word) {
-        console.log("updating word 2", id, word);
+        console.log("updating word", id, 'to', word);
         word.id = id;
         word = this.addPerformanceData(word);
         this.words[id] = word;
@@ -117,7 +117,16 @@ class TextPerformer {
     }
 
     deleteWord(id) {
+        let index = this.wordOrder.indexOf(id);
+        if (index !== -1) {
+            this.wordOrder.splice(index, 1);
+        }
         delete this.words[id];
+    }
+
+    reset() {
+        this.words = {};
+        this.wordOrder = [];
     }
 }
 
@@ -138,8 +147,15 @@ window.addEventListener("message", (event) => {
     }
 
     if (data && data.type === "updateWord") {
-        console.log("updating word", data.id, data.word);
         performer.updateWord(data.id, data.word);
+    }
+
+    if (data && data.type === "deleteWord") {
+        performer.deleteWord(data.id);
+    }
+
+    if (data && data.type === "refresh") {
+        performer.reset();
     }
 });
 
